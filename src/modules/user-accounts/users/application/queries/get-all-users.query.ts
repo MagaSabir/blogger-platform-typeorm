@@ -14,9 +14,9 @@ export class GetAllUsersQueryHandler
 {
   constructor(private queryRepository: UsersQueryRepository) {}
 
-  async execute(
-    query: GetAllUsersQuery,
-  ): Promise<BasePaginatedResponse<UserViewModel>> {
+  async execute(query: GetAllUsersQuery) {
+    // console.log(await this.queryRepository.getUsers());
     return this.queryRepository.getUsers(query.params);
+    // return this.queryRepository.getUsers(query.params);
   }
 }

@@ -30,6 +30,8 @@ import { SecurityDevicesController } from './security-devices/api/security-devic
 import { GetDevicesQueryHandler } from './security-devices/queries/get-devices.query';
 import { DeleteOtherActiveSessionUseCase } from './security-devices/usecases/delete-other-active-session.usecase';
 import { DeleteSessionUseCase } from './security-devices/usecases/delete-sesion.usecase';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from './users/entity/user.entity';
 
 const commandHandlers = [
   CreateUserUseCase,
@@ -69,8 +71,9 @@ const refreshTokenConnectionProvider = [
     inject: [CoreConfig],
   },
 ];
+
 @Module({
-  imports: [CqrsModule],
+  imports: [TypeOrmModule.forFeature([User]), CqrsModule],
   controllers: [UsersController, AuthController, SecurityDevicesController],
   providers: [
     ...refreshTokenConnectionProvider,
