@@ -1,31 +1,49 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  Unique,
+} from 'typeorm';
+import { CreateUserDto } from '../dto/create-user.dto';
 
-@Entity()
-export class User {
+@Entity('User')
+@Unique(['login', 'email'])
+export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   public id: number;
 
-  @Column()
+  @Column({ collation: 'C' })
   public login: string;
 
-  @Column()
+  @Column({ collation: 'C' })
   public email: string;
 
   @Column()
   public passwordHash: string;
 
-  @Column()
+  @CreateDateColumn()
   public createdAt: Date;
 
-  @Column()
+  @Column({ default: false })
   public isConfirmed: boolean;
 
-  @Column('uuid', { default: () => 'uuid_generate_v4()' })
-  public confirmationCode: string;
+  @Column({ type: 'uuid', nullable: true })
+  public confirmationCode: string | null;
 
-  @Column()
-  public confirmationCodeExpiration: Date;
+  @Column({ nullable: true })
+  public confirmationCodeExpiration: Date | null;
 
-  @Column()
-  public deletedAt: Date;
+  @DeleteDateColumn()
+  public deletedAt: Date | null;
+
+  static createUser(dto: CreateUserDto) {
+    const user = new User();
+    user.login = dto.login;
+    user.email = dto.email;
+    user.passwordHash = dto.password;
+    return user;
+  }
 }
