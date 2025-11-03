@@ -1,7 +1,9 @@
-export type CreateUserType = {
+export class CreateUserType {
+  id: number;
   login: string;
+  password: string;
   email: string;
-  passwordHash: string;
-  isConfirmed?: boolean;
-  confirmationCode?: string;
-};
+  isConfirmed: boolean;
+  confirmationCode: string;
+  confirmationCodeExpiration: Date;
+}

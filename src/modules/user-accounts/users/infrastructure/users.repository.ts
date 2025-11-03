@@ -1,27 +1,22 @@
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UserViewModel } from '../api/view-dto/user-view-model';
 import { UserDbModel } from '../api/view-dto/user-db-model';
 import { CreateUserType } from '../../types/create-user-type';
+import { User } from '../entity/user.entity';
+import { CreateUserDto } from '../dto/create-user.dto';
 
 @Injectable()
 export class UsersRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(User) private repo: Repository<User>,
+  ) {}
 
-  async createUser(dto: CreateUserType): Promise<UserViewModel> {
-    const query = `
-            INSERT INTO "Users" ("login", "passwordHash", "email", "isConfirmed")
-            VALUES ($1, $2, $3, $4) RETURNING id, login, email, "createdAt"
-        `;
-    const result: UserViewModel[] = await this.dataSource.query(query, [
-      dto.login,
-      dto.passwordHash,
-      dto.email,
-      dto.isConfirmed,
-    ]);
-    const user: UserViewModel = result[0];
-    return { ...user, id: user.id.toString() };
+  async save(dto: CreateUserDto) {
+    const user: CreateUserType = await this.repo.save(dto);
+    return user.id;
   }
 
   async deleteUserById(id: string): Promise<void> {
