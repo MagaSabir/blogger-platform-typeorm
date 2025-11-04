@@ -1,15 +1,18 @@
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { UserViewModel } from '../../api/view-dto/user-view-model';
+import { User } from '../../entity/user.entity';
 
 export class AuthQueryRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(@InjectRepository(User) private queryRepo: Repository<User>) {}
 
-  async getUser(userId: string) {
-    const query = `SELECT id::text AS "userId", login, email FROM "Users" WHERE id = $1`;
-    const result: UserViewModel[] = await this.dataSource.query(query, [
-      userId,
-    ]);
-    return result[0];
+  async getUser(userId: number): Promise<UserViewModel> {
+    const user: User | null = await this.queryRepo.findOne({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new Error('User not found');
+    }
+    return UserViewModel.mapToViewModel(user);
   }
 }

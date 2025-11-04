@@ -16,18 +16,18 @@ describe('Delete user use case', () => {
 
   it('should delete user by id', async () => {
     usersRepository.findUserOrThrowNotFound.mockResolvedValue({
-      id: '1',
+      id: 1,
     });
 
-    await useCase.execute(new DeleteUserCommand('1'));
+    await useCase.execute(new DeleteUserCommand(1));
 
-    expect(usersRepository.deleteUserById).toHaveBeenCalledWith('1');
+    expect(usersRepository.deleteUserById).toHaveBeenCalledWith(1);
   });
   it('should throw if user not exists', async () => {
     usersRepository.findUserOrThrowNotFound.mockRejectedValue(
       new NotFoundException(),
     );
 
-    await expect(useCase.execute(new DeleteUserCommand('1'))).rejects.toThrow();
+    await expect(useCase.execute(new DeleteUserCommand(1))).rejects.toThrow();
   });
 });

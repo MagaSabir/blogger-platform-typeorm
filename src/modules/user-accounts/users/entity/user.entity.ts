@@ -33,7 +33,7 @@ export class User extends BaseEntity {
   @Column({ type: 'uuid', nullable: true })
   public confirmationCode: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'timestamptz', nullable: true })
   public confirmationCodeExpiration: Date | null;
 
   @DeleteDateColumn()
@@ -43,7 +43,10 @@ export class User extends BaseEntity {
     const user = new User();
     user.login = dto.login;
     user.email = dto.email;
-    user.passwordHash = dto.password;
+    user.passwordHash = dto.passwordHash;
+    user.isConfirmed = dto.isConfirmed;
+    user.confirmationCode = dto.confirmationCode;
+    user.confirmationCodeExpiration = dto.confirmationCodeExpiration;
     return user;
   }
 }

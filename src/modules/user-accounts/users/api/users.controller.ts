@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseIntPipe,
   Post,
   Query,
   UseGuards,
@@ -28,6 +29,7 @@ import { DeleteUserSwaggerDecorator } from './swagger/delete-user.swagger-decora
 import { ApiPaginationResponseDecorator } from './swagger/api-pagination-response.decorator';
 import { BasePaginatedResponse } from '../../../../core/base-paginated-response';
 import { GetUsersSwaggerDecorator } from './swagger/get-users.swagger.decorator';
+import { GetUserQuery } from '../application/queries/get-user.query';
 
 @ApiUnauthorizedResponse({ description: 'Unauthorized' })
 @ApiBasicAuth('basic')
@@ -44,13 +46,16 @@ export class UsersController {
   @CreateUserSwaggerDecorator()
   @HttpCode(HttpStatus.CREATED)
   async createUser(@Body() dto: CreateUserInputDto): Promise<UserViewModel> {
-    return this.commandBus.execute(new CreateUserCommand(dto));
+    const userId: number = await this.commandBus.execute(
+      new CreateUserCommand(dto),
+    );
+    return this.queryBus.execute(new GetUserQuery(userId));
   }
 
   @DeleteUserSwaggerDecorator()
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteById(@Param('id') id: string): Promise<void> {
+  async deleteById(@Param('id', ParseIntPipe) id: number): Promise<void> {
     await this.commandBus.execute(new DeleteUserCommand(id));
   }
 

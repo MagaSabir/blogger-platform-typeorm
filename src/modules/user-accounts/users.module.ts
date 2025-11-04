@@ -11,7 +11,6 @@ import { AuthService } from './users/application/services/auth.service';
 import { PasswordService } from './users/application/services/password.service';
 import { GetAllUsersQueryHandler } from './users/application/queries/get-all-users.query';
 import { UsersConfig } from './config/users.config';
-import { RegistrationUserUseCase } from './users/application/usecase/registration-user.usecase';
 import { AuthController } from './users/api/auth.controller';
 import { JwtService } from '@nestjs/jwt';
 import { LoginUserUseCase } from './users/application/usecase/login-user.usecase';
@@ -36,7 +35,7 @@ import { User } from './users/entity/user.entity';
 const commandHandlers = [
   CreateUserUseCase,
   DeleteUserUseCase,
-  RegistrationUserUseCase,
+  // RegistrationUserUseCase,
   LoginUserUseCase,
   RegistrationConfirmationUseCase,
   ResendConfirmationEmailUseCase,

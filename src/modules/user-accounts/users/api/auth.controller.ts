@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  ParseIntPipe,
   Post,
   Req,
   Res,
@@ -11,8 +12,6 @@ import {
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
-import { CreateUserInputDto } from './input-dto/create-user.input-dto';
-import { RegistrationUserCommand } from '../application/usecase/registration-user.usecase';
 import { LocalAuthGuard } from '../../guards/local/local.auth.guard';
 import { CurrentUserId } from '../../../../core/decorators/current-user-id';
 import { Request, Response } from 'express';
@@ -51,32 +50,32 @@ export class AuthController {
     private queryBus: QueryBus,
   ) {}
 
-  @Post('registration')
-  @ApiOperation({
-    summary:
-      'Registration in the system. Email with confirmation code will be send to passed email address',
-  })
-  @ApiResponse({
-    status: 204,
-    description:
-      'Input data is accepted. Email with confirmation code will be send to passed email address',
-  })
-  @ApiResponse({
-    status: 400,
-    type: ErrorViewModel,
-    description:
-      'If the inputModel has incorrect values (in particular if the user with the given email or login already exists)',
-  })
-  @ApiResponse({
-    status: 429,
-    description: 'More than 5 attempts from one IP-address during 10 seconds',
-  })
-  @ApiBody({ type: CreateUserInputDto })
-  @Throttle({ default: { limit: 5, ttl: 10000 } })
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async registration(@Body() dto: CreateUserInputDto) {
-    await this.commandBus.execute(new RegistrationUserCommand(dto));
-  }
+  // @Post('registration')
+  // @ApiOperation({
+  //   summary:
+  //     'Registration in the system. Email with confirmation code will be send to passed email address',
+  // })
+  // @ApiResponse({
+  //   status: 204,
+  //   description:
+  //     'Input data is accepted. Email with confirmation code will be send to passed email address',
+  // })
+  // @ApiResponse({
+  //   status: 400,
+  //   type: ErrorViewModel,
+  //   description:
+  //     'If the inputModel has incorrect values (in particular if the user with the given email or login already exists)',
+  // })
+  // @ApiResponse({
+  //   status: 429,
+  //   description: 'More than 5 attempts from one IP-address during 10 seconds',
+  // })
+  // @ApiBody({ type: CreateUserInputDto })
+  // @Throttle({ default: { limit: 5, ttl: 10000 } })
+  // @HttpCode(HttpStatus.NO_CONTENT)
+  // async registration(@Body() dto: CreateUserInputDto) {
+  //   await this.commandBus.execute(new RegistrationUserCommand(dto));
+  // }
 
   @Post('login')
   @ApiOperation({ summary: 'Try login user to the system' })
@@ -281,7 +280,9 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Success', type: MeViewModel })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @UseGuards(JwtAuthGuard)
-  async me(@CurrentUserId() userId: string): Promise<UserViewModel> {
+  async me(
+    @CurrentUserId(ParseIntPipe) userId: number,
+  ): Promise<UserViewModel> {
     return this.queryBus.execute(new GetUserQuery(userId));
   }
 }
