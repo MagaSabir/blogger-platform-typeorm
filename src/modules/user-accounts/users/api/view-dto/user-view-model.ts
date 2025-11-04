@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { User } from '../../entity/user.entity';
 
 export class UserViewModel {
   @ApiProperty({
@@ -21,4 +22,13 @@ export class UserViewModel {
     description: 'Дата создания',
   })
   createdAt: string;
+
+  static mapToViewModel(user: User): UserViewModel {
+    const userViewModel = new UserViewModel();
+    userViewModel.id = user.id.toString();
+    userViewModel.login = user.login;
+    userViewModel.email = user.email;
+    userViewModel.createdAt = user.createdAt.toISOString();
+    return userViewModel;
+  }
 }

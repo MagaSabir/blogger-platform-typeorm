@@ -1,11 +1,9 @@
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { UserViewModel } from '../api/view-dto/user-view-model';
 import { UserDbModel } from '../api/view-dto/user-db-model';
 import { CreateUserType } from '../../types/create-user-type';
 import { User } from '../entity/user.entity';
-import { CreateUserDto } from '../dto/create-user.dto';
 
 @Injectable()
 export class UsersRepository {
@@ -14,14 +12,12 @@ export class UsersRepository {
     @InjectRepository(User) private repo: Repository<User>,
   ) {}
 
-  async save(dto: CreateUserDto) {
-    const user: CreateUserType = await this.repo.save(dto);
-    return user.id;
+  async save(dto: User): Promise<User> {
+    return this.repo.save(dto);
   }
 
-  async deleteUserById(id: string): Promise<void> {
-    const query = `DELETE FROM "Users" WHERE id = $1`;
-    await this.dataSource.query(query, [id]);
+  async deleteUserById(id: number): Promise<void> {
+    await this.repo.softDelete({ id: id });
   }
 
   async findUserByLoginOrEmailForAuth(
@@ -35,39 +31,39 @@ export class UsersRepository {
     return result.length ? result[0] : null;
   }
 
-  async findUserOrThrowNotFound(id: string): Promise<UserViewModel> {
-    const user: UserViewModel[] = await this.dataSource.query(
-      `SELECT * FROM "Users" WHERE id = $1`,
-      [id],
-    );
-    if (user.length === 0) throw new NotFoundException();
-    return user[0];
+  async findUserOrThrowNotFound(id: number): Promise<User> {
+    const user: User | null = await this.repo.findOneBy({ id: id });
+    if (!user) throw new NotFoundException();
+    return user;
   }
 
-  async registerUser(dto: CreateUserType): Promise<UserViewModel> {
+  registerUser(dto: CreateUserType) {
     const query = `
             INSERT INTO "Users" ("login", "passwordHash", "email", "confirmationCode")
             VALUES ($1, $2, $3, $4) RETURNING id, login, email, "createdAt"
         `;
-    const result: UserViewModel[] = await this.dataSource.query(query, [
-      dto.login,
-      dto.passwordHash,
-      dto.email,
-      dto.confirmationCode,
-    ]);
-    const user: UserViewModel = result[0];
-    return { ...user, id: user.id.toString() };
+    // const result: UserViewModel[] = await this.dataSource.query(query, [
+    //   dto.login,
+    //   dto.passwordHash,
+    //   dto.email,
+    //   dto.confirmationCode,
+    // ]);
+    // const user: UserViewModel = result[0];
+    // return { ...user, id: user.id.toString() };
   }
 
   async findUserByLoginOrEmail(
     login: string,
     email: string,
-  ): Promise<UserViewModel> {
-    const user: UserViewModel[] = await this.dataSource.query(
-      `SELECT "login", "passwordHash", "email", "isConfirmed" FROM "Users" WHERE login = $1 OR  email = $2`,
-      [login, email],
-    );
-    return user[0] ?? null;
+  ): Promise<User | null> {
+    // const user: UserViewModel[] = await this.dataSource.query(
+    //   `SELECT "login", "passwordHash", "email", "isConfirmed" FROM "Users" WHERE login = $1 OR  email = $2`,
+    //   [login, email],
+    // );
+    const user: User | null = await this.repo.findOne({
+      where: [{ login: login }, { email: email }],
+    });
+    return user;
   }
 
   async findUserByCode(code: string): Promise<UserDbModel> {

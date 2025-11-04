@@ -1,16 +1,16 @@
-import { CreateUserDto } from '../../../dto/create-user.dto';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepository } from '../../../infrastructure/users.repository';
-import { UserViewModel } from '../../../api/view-dto/user-view-model';
 import { PasswordService } from '../../services/password.service';
 import { UsersConfig } from '../../../../config/users.config';
 import { BadRequestException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 
 import { User } from '../../../entity/user.entity';
+import { CreateUserInputDto } from '../../../api/input-dto/create-user.input-dto';
+import { addHours } from '../../../../../../core/utils/date.util';
 
 export class CreateUserCommand {
-  constructor(public dto: CreateUserDto) {}
+  constructor(public dto: CreateUserInputDto) {}
 }
 
 @CommandHandler(CreateUserCommand)
@@ -20,21 +20,23 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
     private passwordService: PasswordService,
     private userConfig: UsersConfig,
   ) {}
-  async execute(command: CreateUserCommand) {
-    // const user: UserViewModel =
-    //   await this.usersRepository.findUserByLoginOrEmail(
-    //     command.dto.login,
-    //     command.dto.email,
-    //   );
-    // if (user) throw new BadRequestException('User already exists');
-    const user = User.createUser(command.dto);
-    const passwordHash: string = await this.passwordService.hash(
-      command.dto.password,
-    );
+  async execute(command: CreateUserCommand): Promise<number> {
+    const { login, email, password } = command.dto;
+    const existUser: User | null =
+      await this.usersRepository.findUserByLoginOrEmail(login, email);
 
-    user.passwordHash = passwordHash;
-    user.isConfirmed = this.userConfig.isAutoConfirmed;
-    user.confirmationCode = randomUUID();
-    return this.usersRepository.save(user);
+    if (existUser) throw new BadRequestException('User already exists');
+
+    const passwordHash = await this.passwordService.hash(password);
+    const user = User.createUser({
+      login,
+      email,
+      passwordHash,
+      isConfirmed: this.userConfig.isAutoConfirmed,
+      confirmationCode: randomUUID(),
+      confirmationCodeExpiration: addHours(1),
+    });
+    const createdUser = await this.usersRepository.save(user);
+    return createdUser.id;
   }
 }
