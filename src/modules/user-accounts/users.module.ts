@@ -31,11 +31,12 @@ import { DeleteOtherActiveSessionUseCase } from './security-devices/usecases/del
 import { DeleteSessionUseCase } from './security-devices/usecases/delete-sesion.usecase';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './users/entity/user.entity';
+import { RegistrationUserUseCase } from './users/application/usecase/registration-user.usecase';
 
 const commandHandlers = [
   CreateUserUseCase,
   DeleteUserUseCase,
-  // RegistrationUserUseCase,
+  RegistrationUserUseCase,
   LoginUserUseCase,
   RegistrationConfirmationUseCase,
   ResendConfirmationEmailUseCase,

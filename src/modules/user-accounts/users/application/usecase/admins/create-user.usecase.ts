@@ -3,11 +3,9 @@ import { UsersRepository } from '../../../infrastructure/users.repository';
 import { PasswordService } from '../../services/password.service';
 import { UsersConfig } from '../../../../config/users.config';
 import { BadRequestException } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 
 import { User } from '../../../entity/user.entity';
 import { CreateUserInputDto } from '../../../api/input-dto/create-user.input-dto';
-import { addHours } from '../../../../../../core/utils/date.util';
 
 export class CreateUserCommand {
   constructor(public dto: CreateUserInputDto) {}
@@ -33,8 +31,6 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
       email,
       passwordHash,
       isConfirmed: this.userConfig.isAutoConfirmed,
-      confirmationCode: randomUUID(),
-      confirmationCodeExpiration: addHours(1),
     });
     const createdUser = await this.usersRepository.save(user);
     return createdUser.id;
