@@ -8,6 +8,7 @@ import {
   Unique,
 } from 'typeorm';
 import { CreateUserDto } from '../dto/create-user.dto';
+import { RegisterUserDto } from '../dto/register-user.dto';
 
 @Entity('User')
 @Unique(['login', 'email'])
@@ -45,6 +46,14 @@ export class User extends BaseEntity {
     user.email = dto.email;
     user.passwordHash = dto.passwordHash;
     user.isConfirmed = dto.isConfirmed;
+    return user;
+  }
+
+  static registerUser(dto: RegisterUserDto) {
+    const user = new User();
+    user.login = dto.login;
+    user.email = dto.email;
+    user.passwordHash = dto.passwordHash;
     user.confirmationCode = dto.confirmationCode;
     user.confirmationCodeExpiration = dto.confirmationCodeExpiration;
     return user;

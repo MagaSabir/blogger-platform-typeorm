@@ -41,6 +41,8 @@ import { LoginInputDto } from './input-dto/login-input.dto';
 import { LoginViewModel } from './view-dto/login-view-model';
 import { ErrorViewModel } from '../../../../core/view-dto/error-view-model';
 import { MeViewModel } from './view-dto/me-view-model';
+import { CreateUserInputDto } from './input-dto/create-user.input-dto';
+import { RegistrationUserCommand } from '../application/usecase/registration-user.usecase';
 
 @Controller('auth')
 @UseGuards(ThrottlerGuard)
@@ -50,32 +52,32 @@ export class AuthController {
     private queryBus: QueryBus,
   ) {}
 
-  // @Post('registration')
-  // @ApiOperation({
-  //   summary:
-  //     'Registration in the system. Email with confirmation code will be send to passed email address',
-  // })
-  // @ApiResponse({
-  //   status: 204,
-  //   description:
-  //     'Input data is accepted. Email with confirmation code will be send to passed email address',
-  // })
-  // @ApiResponse({
-  //   status: 400,
-  //   type: ErrorViewModel,
-  //   description:
-  //     'If the inputModel has incorrect values (in particular if the user with the given email or login already exists)',
-  // })
-  // @ApiResponse({
-  //   status: 429,
-  //   description: 'More than 5 attempts from one IP-address during 10 seconds',
-  // })
-  // @ApiBody({ type: CreateUserInputDto })
-  // @Throttle({ default: { limit: 5, ttl: 10000 } })
-  // @HttpCode(HttpStatus.NO_CONTENT)
-  // async registration(@Body() dto: CreateUserInputDto) {
-  //   await this.commandBus.execute(new RegistrationUserCommand(dto));
-  // }
+  @Post('registration')
+  @ApiOperation({
+    summary:
+      'Registration in the system. Email with confirmation code will be send to passed email address',
+  })
+  @ApiResponse({
+    status: 204,
+    description:
+      'Input data is accepted. Email with confirmation code will be send to passed email address',
+  })
+  @ApiResponse({
+    status: 400,
+    type: ErrorViewModel,
+    description:
+      'If the inputModel has incorrect values (in particular if the user with the given email or login already exists)',
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'More than 5 attempts from one IP-address during 10 seconds',
+  })
+  @ApiBody({ type: CreateUserInputDto })
+  @Throttle({ default: { limit: 5, ttl: 10000 } })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async registration(@Body() dto: CreateUserInputDto) {
+    await this.commandBus.execute(new RegistrationUserCommand(dto));
+  }
 
   @Post('login')
   @ApiOperation({ summary: 'Try login user to the system' })
@@ -94,7 +96,7 @@ export class AuthController {
     status: 429,
     description: 'More than 5 attempts from one IP-address during 10 seconds',
   })
-  @Throttle({ default: { limit: 5, ttl: 10000 } })
+  // @Throttle({ default: { limit: 5, ttl: 10000 } })
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
   async login(

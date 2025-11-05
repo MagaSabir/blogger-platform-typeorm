@@ -15,7 +15,7 @@ describe('Create user useCase', () => {
 
     usersRepository = {
       findUserByLoginOrEmail: jest.fn(),
-      createUser: jest.fn(),
+      save: jest.fn(),
     } as Partial<UsersRepository> as any;
 
     userConfig = {
@@ -43,7 +43,7 @@ describe('Create user useCase', () => {
       null,
     );
     (passwordService.hash as jest.Mock).mockResolvedValue('hashedPassword');
-    (usersRepository.createUser as jest.Mock).mockResolvedValue({
+    (usersRepository.save as jest.Mock).mockResolvedValue({
       id: '1',
       login: dto.login,
       email: dto.email,
@@ -52,19 +52,14 @@ describe('Create user useCase', () => {
 
     const result = await useCase.execute(new CreateUserCommand(dto));
 
-    expect(result).toEqual({
-      id: '1',
-      login: dto.login,
-      email: dto.email,
-      isConfirmed: true,
-    });
+    expect(result).toEqual('1');
 
     expect(usersRepository.findUserByLoginOrEmail).toHaveBeenCalledWith(
       dto.login,
       dto.email,
     );
     expect(passwordService.hash).toHaveBeenCalledWith(dto.password);
-    expect(usersRepository.createUser).toHaveBeenCalledWith({
+    expect(usersRepository.save).toHaveBeenCalledWith({
       login: dto.login,
       email: dto.email,
       passwordHash: 'hashedPassword',

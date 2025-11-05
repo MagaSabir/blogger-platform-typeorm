@@ -1,16 +1,15 @@
 import { Controller, Delete, HttpCode, HttpStatus } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../user-accounts/users/entity/user.entity';
 
 @Controller('testing')
 export class TestingController {
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(@InjectRepository(User) private repo: Repository<User>) {}
 
   @Delete('all-data')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteAll() {
-    await this.dataSource.query(
-      `TRUNCATE "Users", "Posts", "Blogs", "Sessions", "PostLikes", "Comments", "CommentLikes" RESTART IDENTITY`,
-    );
+    await this.repo.deleteAll();
   }
 }

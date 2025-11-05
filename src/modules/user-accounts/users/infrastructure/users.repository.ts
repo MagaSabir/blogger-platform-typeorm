@@ -2,7 +2,6 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UserDbModel } from '../api/view-dto/user-db-model';
-import { CreateUserType } from '../../types/create-user-type';
 import { User } from '../entity/user.entity';
 
 @Injectable()
@@ -37,29 +36,25 @@ export class UsersRepository {
     return user;
   }
 
-  registerUser(dto: CreateUserType) {
-    const query = `
-            INSERT INTO "Users" ("login", "passwordHash", "email", "confirmationCode")
-            VALUES ($1, $2, $3, $4) RETURNING id, login, email, "createdAt"
-        `;
-    // const result: UserViewModel[] = await this.dataSource.query(query, [
-    //   dto.login,
-    //   dto.passwordHash,
-    //   dto.email,
-    //   dto.confirmationCode,
-    // ]);
-    // const user: UserViewModel = result[0];
-    // return { ...user, id: user.id.toString() };
+  registerUser(dto: User) {
+    // const query = `
+    //         INSERT INTO "Users" ("login", "passwordHash", "email", "confirmationCode")
+    //         VALUES ($1, $2, $3, $4) RETURNING id, login, email, "createdAt"
+    //     `;
+    // // const result: UserViewModel[] = await this.dataSource.query(query, [
+    // //   dto.login,
+    // //   dto.passwordHash,
+    // //   dto.email,
+    // //   dto.confirmationCode,
+    // // ]);
+    // // const user: UserViewModel = result[0];
+    // // return { ...user, id: user.id.toString() };
   }
 
   async findUserByLoginOrEmail(
     login: string,
     email: string,
   ): Promise<User | null> {
-    // const user: UserViewModel[] = await this.dataSource.query(
-    //   `SELECT "login", "passwordHash", "email", "isConfirmed" FROM "Users" WHERE login = $1 OR  email = $2`,
-    //   [login, email],
-    // );
     const user: User | null = await this.repo.findOne({
       where: [{ login: login }, { email: email }],
     });

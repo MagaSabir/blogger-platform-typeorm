@@ -3,6 +3,4 @@ export class CreateUserDto {
   passwordHash: string;
   email: string;
   isConfirmed: boolean;
-  confirmationCode: string;
-  confirmationCodeExpiration: Date;
 }

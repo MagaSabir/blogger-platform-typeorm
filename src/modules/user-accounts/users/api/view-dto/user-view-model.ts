@@ -31,4 +31,8 @@ export class UserViewModel {
     userViewModel.createdAt = user.createdAt.toISOString();
     return userViewModel;
   }
+
+  static mapToViewModels(users: User[]) {
+    return users.map((u) => this.mapToViewModel(u));
+  }
 }

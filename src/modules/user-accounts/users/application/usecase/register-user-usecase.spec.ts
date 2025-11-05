@@ -18,7 +18,7 @@ describe('register user', () => {
 
     usersRepository = {
       findUserByLoginOrEmail: jest.fn(),
-      registerUser: jest.fn(),
+      save: jest.fn(),
     } as any;
 
     mailService = { sendConfirmationEmail: jest.fn() } as any;
@@ -44,8 +44,13 @@ describe('register user', () => {
     (usersRepository.findUserByLoginOrEmail as jest.Mock).mockResolvedValue(
       null,
     );
+    (usersRepository.save as jest.Mock).mockResolvedValue({
+      id: '1',
+      login: dto.login,
+      email: dto.email,
+    });
     const command = new RegistrationUserCommand(dto);
-    await useCase.execute(command);
+    const result = await useCase.execute(command);
 
     expect(usersRepository.findUserByLoginOrEmail).toHaveBeenCalledWith(
       dto.login,
@@ -54,18 +59,19 @@ describe('register user', () => {
 
     expect(passwordService.hash).toHaveBeenCalledWith(dto.password);
 
-    expect(usersRepository.registerUser).toHaveBeenCalledWith(
+    expect(usersRepository.save).toHaveBeenCalledWith(
       expect.objectContaining({
         login: dto.login,
         email: dto.email,
         passwordHash: 'hashed',
-        confirmationCode: expect.any(String),
       }),
     );
     expect(mailService.sendConfirmationEmail).toHaveBeenCalledWith(
       dto.email,
       expect.any(String),
     );
+
+    expect(result).toBe('1');
   });
 
   it('should throw error if login already exists', async () => {

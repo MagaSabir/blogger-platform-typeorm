@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UserViewModel } from '../modules/user-accounts/users/api/view-dto/user-view-model';
 
 export class BasePaginatedResponse<T> {
   @ApiProperty({ required: false, example: 1 })
