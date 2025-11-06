@@ -1,26 +1,18 @@
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { CreateSessionDto } from '../dto/CreateSessionDto';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { TokenPayloadType } from '../../types/token-payload-type';
 import { SessionsType } from '../type/sessions-type';
 import { NotFoundException } from '@nestjs/common';
+import { Session } from '../entity/session.entity';
 
 export class SessionRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(Session) private sessionsRepo: Repository<Session>,
+  ) {}
 
-  async createSession(dto: CreateSessionDto) {
-    const query = `
-    INSERT INTO "Sessions" ("userId", "deviceId", "userAgent", "ip", "lastActiveDate", "expiresAt")
-    VALUES ($1, $2, $3, $4, $5, $6)
-    `;
-    await this.dataSource.query(query, [
-      dto.userId,
-      dto.deviceId,
-      dto.userAgent,
-      dto.ip,
-      dto.lastActiveDate,
-      dto.expiresAt,
-    ]);
+  async save(session: Session) {
+    await this.sessionsRepo.save(session);
   }
 
   async updateSessionToken(payload: TokenPayloadType) {

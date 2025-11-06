@@ -1,5 +1,5 @@
 export class CreateSessionDto {
-  userId: string;
+  userId: number;
   deviceId: string;
   userAgent: string;
   ip: string;
