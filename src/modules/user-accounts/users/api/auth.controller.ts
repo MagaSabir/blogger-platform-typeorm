@@ -100,7 +100,7 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
   async login(
-    @CurrentUserId() userId: string,
+    @CurrentUserId(ParseIntPipe) userId: number,
     @Res() res: Response,
     @Req() req: Request,
   ) {

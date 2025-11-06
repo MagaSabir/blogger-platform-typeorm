@@ -32,6 +32,7 @@ import { DeleteSessionUseCase } from './security-devices/usecases/delete-sesion.
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './users/entity/user.entity';
 import { RegistrationUserUseCase } from './users/application/usecase/registration-user.usecase';
+import { Session } from './sessions/entity/session.entity';
 
 const commandHandlers = [
   CreateUserUseCase,
@@ -73,7 +74,7 @@ const refreshTokenConnectionProvider = [
 ];
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User]), CqrsModule],
+  imports: [TypeOrmModule.forFeature([User, Session]), CqrsModule],
   controllers: [UsersController, AuthController, SecurityDevicesController],
   providers: [
     ...refreshTokenConnectionProvider,

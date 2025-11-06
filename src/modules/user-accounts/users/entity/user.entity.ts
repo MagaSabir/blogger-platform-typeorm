@@ -4,13 +4,15 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { RegisterUserDto } from '../dto/register-user.dto';
+import { Session } from '../../sessions/entity/session.entity';
 
-@Entity('User')
+@Entity('Users')
 @Unique(['login', 'email'])
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
@@ -39,6 +41,9 @@ export class User extends BaseEntity {
 
   @DeleteDateColumn()
   public deletedAt: Date | null;
+
+  @OneToMany(() => Session, (session) => session.userId)
+  sessions: Session[];
 
   static createUser(dto: CreateUserDto) {
     const user = new User();
