@@ -1,8 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Inject } from '@nestjs/common';
+import { Inject, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { SessionRepository } from '../../../sessions/infrastructure/session-repository';
 import { TokenPayloadType } from '../../../types/token-payload-type';
+import { Session } from '../../../sessions/entity/session.entity';
 
 export class RefreshTokenCommand {
   constructor(public token: string) {}
@@ -30,10 +31,20 @@ export class RefreshTokenUseCase
       userId,
       deviceId,
     });
-    const newSessionToken: TokenPayloadType =
+    const session: Session | null = await this.sessionRepository.findSession(
+      userId,
+      deviceId,
+    );
+
+    if (!session) throw new UnauthorizedException('Session not found');
+    const newPayload: TokenPayloadType =
       this.refreshTokenContext.verify(refreshToken);
-    console.log(new Date(newSessionToken.exp));
-    await this.sessionRepository.updateSessionToken(newSessionToken);
+
+    session.updateSession(
+      new Date(newPayload.iat * 1000),
+      new Date(newPayload.exp * 1000),
+    );
+    await this.sessionRepository.save(session);
     return { accessToken, refreshToken };
   }
 }

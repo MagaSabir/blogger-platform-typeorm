@@ -13,6 +13,7 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GetDevicesQuery } from '../queries/get-devices.query';
 import { DeleteOtherActiveSessionCommand } from '../usecases/delete-other-active-session.usecase';
 import { DeleteSessionCommand } from '../usecases/delete-sesion.usecase';
+import { InputDeviceId } from './input-dto/input-device-id';
 
 @UseGuards(RefreshTokenGuard)
 @Controller('security')

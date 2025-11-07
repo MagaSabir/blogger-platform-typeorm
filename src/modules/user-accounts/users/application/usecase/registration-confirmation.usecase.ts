@@ -1,8 +1,7 @@
-import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepository } from '../../infrastructure/users.repository';
-import { UserDbModel } from '../../api/view-dto/user-db-model';
 import { BadRequestException } from '@nestjs/common';
-import { EmailService } from '../../../../notification/email.service';
+import { User } from '../../entity/user.entity';
 
 export class RegistrationConfirmationCommand {
   constructor(public code: string) {}
@@ -12,14 +11,10 @@ export class RegistrationConfirmationCommand {
 export class RegistrationConfirmationUseCase
   implements ICommandHandler<RegistrationConfirmationCommand>
 {
-  constructor(
-    private userRepository: UsersRepository,
-    private eventBus: EventBus,
-    private mailService: EmailService,
-  ) {}
+  constructor(private userRepository: UsersRepository) {}
 
   async execute(command: RegistrationConfirmationCommand): Promise<void> {
-    const user: UserDbModel = await this.userRepository.findUserByCode(
+    const user: User | null = await this.userRepository.findUserByCode(
       command.code,
     );
 
@@ -34,10 +29,7 @@ export class RegistrationConfirmationUseCase
       });
     }
 
-    if (user.confirmationCodeExpiration < new Date()) {
-      throw new BadRequestException('CodeExpiration');
-    }
-
-    await this.userRepository.confirmUserEmail(user.id);
+    user.emailConfirm(command.code);
+    await this.userRepository.save(user);
   }
 }

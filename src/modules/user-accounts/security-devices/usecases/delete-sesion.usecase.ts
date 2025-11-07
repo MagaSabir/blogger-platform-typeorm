@@ -4,6 +4,7 @@ import { ForbiddenException, Inject, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { TokenPayloadType } from '../../types/token-payload-type';
 import { isUUID } from 'class-validator';
+import { Session } from '../../sessions/entity/session.entity';
 
 export class DeleteSessionCommand {
   constructor(
@@ -22,7 +23,7 @@ export class DeleteSessionUseCase
   ) {}
   async execute(command: DeleteSessionCommand) {
     if (!isUUID(command.deviceId)) throw new NotFoundException();
-    const session =
+    const session: Session | null =
       await this.sessionRepository.findSessionOrThrowNotFoundException(
         command.deviceId,
       );

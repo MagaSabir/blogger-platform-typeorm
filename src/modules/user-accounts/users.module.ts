@@ -33,6 +33,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './users/entity/user.entity';
 import { RegistrationUserUseCase } from './users/application/usecase/registration-user.usecase';
 import { Session } from './sessions/entity/session.entity';
+import { GetMeQueryHandler } from './users/application/queries/get-me.query';
 
 const commandHandlers = [
   CreateUserUseCase,
@@ -55,7 +56,7 @@ const refreshTokenConnectionProvider = [
     useFactory: (coreConfig: CoreConfig): JwtService => {
       return new JwtService({
         secret: coreConfig.accessTokenSecret,
-        signOptions: { expiresIn: '10m' },
+        signOptions: { expiresIn: '10s' },
       });
     },
     inject: [CoreConfig],
@@ -66,7 +67,7 @@ const refreshTokenConnectionProvider = [
     useFactory: (coreConfig: CoreConfig): JwtService => {
       return new JwtService({
         secret: coreConfig.refreshTokenSecret,
-        signOptions: { expiresIn: '20m' },
+        signOptions: { expiresIn: '20s' },
       });
     },
     inject: [CoreConfig],
@@ -91,6 +92,7 @@ const refreshTokenConnectionProvider = [
     GetAllUsersQueryHandler,
     GetDevicesQueryHandler,
     GetUserQueryHandler,
+    GetMeQueryHandler,
     ...commandHandlers,
   ],
 })

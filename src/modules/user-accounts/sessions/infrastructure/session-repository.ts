@@ -1,9 +1,9 @@
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
-import { TokenPayloadType } from '../../types/token-payload-type';
+import { DataSource, MoreThan, Not, Repository } from 'typeorm';
 import { SessionsType } from '../type/sessions-type';
 import { NotFoundException } from '@nestjs/common';
 import { Session } from '../entity/session.entity';
+import { SessionViewModel } from '../../security-devices/view-model/session.view-model';
 
 export class SessionRepository {
   constructor(
@@ -15,45 +15,26 @@ export class SessionRepository {
     await this.sessionsRepo.save(session);
   }
 
-  async updateSessionToken(payload: TokenPayloadType) {
-    const { userId, deviceId, iat, exp } = payload;
-    const query = `UPDATE "Sessions" SET "lastActiveDate" = to_timestamp($1), "expiresAt" = to_timestamp($2) 
-                  WHERE "userId" = $3 AND "deviceId" = $4`;
-    await this.dataSource.query(query, [iat, exp, userId, deviceId]);
+  async findSession(userId: number, deviceId: string): Promise<Session | null> {
+    return await this.sessionsRepo.findOne({ where: { userId, deviceId } });
   }
 
-  async findSession(
-    userId: string,
-    deviceId: string,
-  ): Promise<SessionsType | null> {
-    const session: SessionsType[] = await this.dataSource.query(
-      `SELECT * FROM "Sessions" WHERE "userId" = $1 AND "deviceId" = $2`,
-      [userId, deviceId],
-    );
-    return session[0] ?? null;
+  async deleteSession(userId: number, deviceId: string) {
+    await this.sessionsRepo.softDelete({ userId, deviceId });
   }
 
-  async deleteSession(userId: string, deviceId: string) {
-    await this.dataSource.query(
-      `DELETE FROM "Sessions" WHERE "userId" = $1 AND "deviceId" = $2`,
-      [userId, deviceId],
-    );
+  async getDeviceSession(userId: number): Promise<SessionViewModel[]> {
+    const sessions: Session[] = await this.sessionsRepo.find({
+      where: { userId, expiresAt: MoreThan(new Date()) },
+    });
+    return SessionViewModel.mapToViewModel(sessions);
   }
 
-  async getDeviceSession(userId: string, now: number): Promise<SessionsType[]> {
-    const session: SessionsType[] = await this.dataSource.query(
-      `SELECT ip, "userAgent" as title, "lastActiveDate", "deviceId" FROM "Sessions" WHERE "userId" = $1 AND "expiresAt" > to_timestamp($2)`,
-      [userId, now],
-    );
-    return session;
-  }
-
-  async deleteOtherActiveSessions(userId: string, deviceId: string) {
-    await this.dataSource.query(
-      `DELETE FROM "Sessions" WHERE "userId" = $1 AND "deviceId" != $2
-`,
-      [userId, deviceId],
-    );
+  async deleteOtherActiveSessions(userId: number, currentDeviceId: string) {
+    await this.sessionsRepo.softDelete({
+      userId,
+      deviceId: Not(currentDeviceId),
+    });
   }
 
   async deleteSessionByDeviceId(deviceId: string) {
@@ -63,12 +44,13 @@ export class SessionRepository {
     );
   }
 
-  async findSessionOrThrowNotFoundException(deviceId: string) {
-    const result: SessionsType[] = await this.dataSource.query(
-      `SELECT * FROM "Sessions" WHERE "deviceId" = $1`,
-      [deviceId],
-    );
-    if (!result[0]) throw new NotFoundException();
-    return result[0];
+  async findSessionOrThrowNotFoundException(
+    deviceId: string,
+  ): Promise<Session> {
+    const session: Session | null = await this.sessionsRepo.findOne({
+      where: { deviceId },
+    });
+    if (!session) throw new NotFoundException();
+    return session;
   }
 }

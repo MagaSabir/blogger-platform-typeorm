@@ -43,6 +43,10 @@ import { ErrorViewModel } from '../../../../core/view-dto/error-view-model';
 import { MeViewModel } from './view-dto/me-view-model';
 import { CreateUserInputDto } from './input-dto/create-user.input-dto';
 import { RegistrationUserCommand } from '../application/usecase/registration-user.usecase';
+import {
+  GetMeQuery,
+  GetMeQueryHandler,
+} from '../application/queries/get-me.query';
 
 @Controller('auth')
 @UseGuards(ThrottlerGuard)
@@ -96,7 +100,7 @@ export class AuthController {
     status: 429,
     description: 'More than 5 attempts from one IP-address during 10 seconds',
   })
-  // @Throttle({ default: { limit: 5, ttl: 10000 } })
+  @Throttle({ default: { limit: 5, ttl: 10000 } })
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
   async login(
@@ -285,6 +289,6 @@ export class AuthController {
   async me(
     @CurrentUserId(ParseIntPipe) userId: number,
   ): Promise<UserViewModel> {
-    return this.queryBus.execute(new GetUserQuery(userId));
+    return this.queryBus.execute(new GetMeQuery(userId));
   }
 }

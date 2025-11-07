@@ -1,18 +1,17 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { AuthQueryRepository } from '../../infrastructure/query-repository/auth.query-repository';
 import { MeViewModel } from '../../api/view-dto/me-view-model';
-import { UserViewModel } from '../../api/view-dto/user-view-model';
 
-export class GetUserQuery {
+export class GetMeQuery {
   constructor(public userId: number) {}
 }
 
-@QueryHandler(GetUserQuery)
-export class GetUserQueryHandler implements IQueryHandler<GetUserQuery> {
+@QueryHandler(GetMeQuery)
+export class GetMeQueryHandler implements IQueryHandler<GetMeQuery> {
   constructor(private authQueryRepository: AuthQueryRepository) {}
 
-  async execute(query: GetUserQuery): Promise<UserViewModel> {
+  async execute(query: GetMeQuery): Promise<MeViewModel> {
     const user = await this.authQueryRepository.getUser(query.userId);
-    return UserViewModel.mapToViewModel(user);
+    return MeViewModel.meMapToViewModel(user);
   }
 }
