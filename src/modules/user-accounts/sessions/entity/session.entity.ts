@@ -1,6 +1,7 @@
 import {
   BaseEntity,
   Column,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -11,29 +12,37 @@ import { CreateSessionDto } from '../dto/CreateSessionDto';
 @Entity('Sessions')
 export class Session extends BaseEntity {
   @PrimaryGeneratedColumn()
-  id: number;
+  public id: number;
 
   @Column({ type: 'uuid' })
-  deviceId: string;
+  public deviceId: string;
 
   @Column({ type: 'varchar', length: 30 })
-  ip: string;
+  public ip: string;
 
   @Column({ type: 'timestamp with time zone', default: () => 'now()' })
-  lastActiveDate: Date;
+  public lastActiveDate: Date;
 
   @Column({ type: 'timestamp with time zone' })
-  expiresAt: Date;
+  public expiresAt: Date;
 
-  @Column({ type: 'varchar', length: 100 })
-  userAgent: string;
+  @Column({ type: 'varchar', length: 200 })
+  public userAgent: string;
 
-  @ManyToOne(() => User, (user) => user.id)
+  @DeleteDateColumn()
+  public deletedAt: Date | null;
+
+  @ManyToOne(() => User, (user) => user.sessions, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: User;
 
   @Column()
   userId: number;
+
+  updateSession(iat: Date, exp: Date) {
+    this.lastActiveDate = iat;
+    this.expiresAt = exp;
+  }
 
   static createSession(dto: CreateSessionDto) {
     const session = new Session();

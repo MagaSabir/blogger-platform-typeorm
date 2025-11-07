@@ -7,8 +7,8 @@ import {
 import { SessionRepository } from '../../sessions/infrastructure/session-repository';
 import { JwtService } from '@nestjs/jwt';
 import { TokenPayloadType } from '../../types/token-payload-type';
-import { SessionsType } from '../../sessions/type/sessions-type';
 import { AuthenticatedRequest } from '../../../../core/interfaces/authenticated-request';
+import { Session } from '../../sessions/entity/session.entity';
 
 export class RefreshTokenGuard implements CanActivate {
   constructor(
@@ -28,13 +28,15 @@ export class RefreshTokenGuard implements CanActivate {
 
     try {
       const payload: TokenPayloadType = this.refreshTokenContext.verify(token);
-      const sessions: SessionsType | null =
-        await this.sessionRepository.findSession(
-          payload.userId,
-          payload.deviceId,
-        );
+      const sessions: Session | null = await this.sessionRepository.findSession(
+        payload.userId,
+        payload.deviceId,
+      );
 
-      if (!sessions || sessions.lastActiveDate / 1000 !== payload.iat) {
+      if (
+        !sessions ||
+        Math.floor(sessions.lastActiveDate.getTime()) / 1000 !== payload.iat
+      ) {
         throw new UnauthorizedException('Invalid session');
       }
 

@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { User } from '../../entity/user.entity';
 
 export class MeViewModel {
   @ApiProperty({
@@ -18,5 +19,13 @@ export class MeViewModel {
     example: 'password123',
     description: 'password',
   })
-  password: string;
+  userId: string;
+
+  static meMapToViewModel(user: User): MeViewModel {
+    const userViewModel = new MeViewModel();
+    userViewModel.userId = user.id.toString();
+    userViewModel.login = user.login;
+    userViewModel.email = user.email;
+    return userViewModel;
+  }
 }

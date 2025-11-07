@@ -1,5 +1,5 @@
 export type TokenPayloadType = {
-  userId: string;
+  userId: number;
   deviceId: string;
   iat: number;
   exp: number;

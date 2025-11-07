@@ -1,8 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepository } from '../../infrastructure/users.repository';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { EmailService } from '../../../../notification/email.service';
 import { BadRequestException } from '@nestjs/common';
+import { addHours } from '../../../../../core/utils/date.util';
 
 export class ResendConfirmationEmailCommand {
   constructor(public email: string) {}
@@ -18,7 +19,7 @@ export class ResendConfirmationEmailUseCase
   ) {}
 
   async execute(command: ResendConfirmationEmailCommand) {
-    const user = await this.usersRepository.findIsNotConfirmedUsersByEmail(
+    const user = await this.usersRepository.findUnconfirmedUserByEmail(
       command.email,
     );
     if (!user) {
@@ -32,9 +33,10 @@ export class ResendConfirmationEmailUseCase
       });
     }
 
-    const code: string = uuidv4();
-
-    await this.usersRepository.updateConfirmationCode(code, user.email);
+    const code: string = randomUUID();
+    const expiration: Date = addHours(1);
+    user.updateConfirmationCode(code, expiration);
+    await this.usersRepository.save(user);
     this.emailService.sendConfirmationEmail(user.email, code);
   }
 }

@@ -1,8 +1,10 @@
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepository } from '../../infrastructure/users.repository';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { PasswordRecoveryEvent } from '../events/password-recovery.event';
 import { BadRequestException } from '@nestjs/common';
+import { addHours } from '../../../../../core/utils/date.util';
+import { User } from '../../entity/user.entity';
 
 export class PasswordRecoveryCommand {
   constructor(public email: string) {}
@@ -18,9 +20,8 @@ export class PasswordRecoveryUseCase
   ) {}
 
   async execute(command: PasswordRecoveryCommand) {
-    const user = await this.usersRepository.findIsNotConfirmedUsersByEmail(
-      command.email,
-    );
+    const user: User | null =
+      await this.usersRepository.findUnconfirmedUserByEmail(command.email);
     if (!user) {
       throw new BadRequestException({
         errorsMessages: [
@@ -31,9 +32,12 @@ export class PasswordRecoveryUseCase
         ],
       });
     }
-    const code = uuidv4();
+    const code = randomUUID();
+    const expiration: Date = addHours(1);
 
-    await this.usersRepository.updateConfirmationCode(code, user.email);
+    user.updateConfirmationCode(code, expiration);
+
+    await this.usersRepository.save(user);
     this.eventBus.publish(new PasswordRecoveryEvent(user.email, code));
   }
 }

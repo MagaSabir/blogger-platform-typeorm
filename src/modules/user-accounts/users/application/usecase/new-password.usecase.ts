@@ -32,6 +32,8 @@ export class NewPasswordUseCase {
     const passwordHash: string = await this.passwordService.hash(
       command.newPassword,
     );
-    await this.usersRepository.updatePassword(command.code, passwordHash);
+
+    user.newPassword(passwordHash);
+    await this.usersRepository.save(user);
   }
 }

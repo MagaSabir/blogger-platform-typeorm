@@ -19,7 +19,6 @@ export class GetDevicesQueryHandler implements IQueryHandler<GetDevicesQuery> {
     const payload: TokenPayloadType = this.refreshTokenContext.verify(
       query.token,
     );
-    const now = Math.floor(Date.now() / 1000);
-    return this.sessionRepository.getDeviceSession(payload.userId, now);
+    return this.sessionRepository.getDeviceSession(payload.userId);
   }
 }
