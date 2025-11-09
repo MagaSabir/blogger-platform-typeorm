@@ -17,7 +17,6 @@ import { CurrentUserId } from '../../../../core/decorators/current-user-id';
 import { Request, Response } from 'express';
 import { LoginUserCommand } from '../application/usecase/login-user.usecase';
 import { JwtAuthGuard } from '../../guards/bearer/jwt-auth.guard';
-import { GetUserQuery } from '../application/queries/get-user.query';
 import { UserViewModel } from './view-dto/user-view-model';
 import { InputCodeValidation } from './input-dto/input-code-validation';
 import { RegistrationConfirmationCommand } from '../application/usecase/registration-confirmation.usecase';
@@ -43,10 +42,9 @@ import { ErrorViewModel } from '../../../../core/view-dto/error-view-model';
 import { MeViewModel } from './view-dto/me-view-model';
 import { CreateUserInputDto } from './input-dto/create-user.input-dto';
 import { RegistrationUserCommand } from '../application/usecase/registration-user.usecase';
-import {
-  GetMeQuery,
-  GetMeQueryHandler,
-} from '../application/queries/get-me.query';
+import { GetMeQuery } from '../application/queries/get-me.query';
+import { LoginSwaggerDecorator } from './swagger/login.swagger-decorator';
+import { RegisterUserSwaggerDecorator } from './swagger/registrer-user.swagger.decorator';
 
 @Controller('auth')
 @UseGuards(ThrottlerGuard)
@@ -57,26 +55,7 @@ export class AuthController {
   ) {}
 
   @Post('registration')
-  @ApiOperation({
-    summary:
-      'Registration in the system. Email with confirmation code will be send to passed email address',
-  })
-  @ApiResponse({
-    status: 204,
-    description:
-      'Input data is accepted. Email with confirmation code will be send to passed email address',
-  })
-  @ApiResponse({
-    status: 400,
-    type: ErrorViewModel,
-    description:
-      'If the inputModel has incorrect values (in particular if the user with the given email or login already exists)',
-  })
-  @ApiResponse({
-    status: 429,
-    description: 'More than 5 attempts from one IP-address during 10 seconds',
-  })
-  @ApiBody({ type: CreateUserInputDto })
+  @RegisterUserSwaggerDecorator()
   @Throttle({ default: { limit: 5, ttl: 10000 } })
   @HttpCode(HttpStatus.NO_CONTENT)
   async registration(@Body() dto: CreateUserInputDto) {
@@ -84,22 +63,8 @@ export class AuthController {
   }
 
   @Post('login')
-  @ApiOperation({ summary: 'Try login user to the system' })
+  @LoginSwaggerDecorator()
   @ApiBody({ type: LoginInputDto })
-  @ApiResponse({ type: LoginViewModel, status: 200 })
-  @ApiResponse({
-    status: 400,
-    type: ErrorViewModel,
-    description: 'If the password or login is wrong',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-  })
-  @ApiResponse({
-    status: 429,
-    description: 'More than 5 attempts from one IP-address during 10 seconds',
-  })
   @Throttle({ default: { limit: 5, ttl: 10000 } })
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
@@ -143,7 +108,6 @@ export class AuthController {
     status: 429,
     description: 'More than 5 attempts from one IP-address during 10 seconds',
   })
-  @Throttle({ default: { limit: 5, ttl: 10000 } })
   @HttpCode(HttpStatus.NO_CONTENT)
   async confirmation(@Body() body: InputCodeValidation): Promise<void> {
     await this.commandBus.execute(
