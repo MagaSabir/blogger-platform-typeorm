@@ -32,7 +32,7 @@ export class Session extends BaseEntity {
   @DeleteDateColumn()
   public deletedAt: Date | null;
 
-  @ManyToOne(() => User, (user) => user.sessions, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.sessions)
   @JoinColumn({ name: 'userId' })
   user: User;
 

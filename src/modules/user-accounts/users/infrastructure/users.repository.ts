@@ -16,7 +16,11 @@ export class UsersRepository {
   }
 
   async deleteUserById(id: number): Promise<void> {
-    await this.repo.softDelete({ id: id });
+    const user = await this.repo.findOne({
+      where: { id },
+      relations: ['sessions'],
+    });
+    if (user) await this.repo.softRemove(user);
   }
 
   async findUserByLoginOrEmailForAuth(

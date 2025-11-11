@@ -43,7 +43,9 @@ export class User extends BaseEntity {
   @DeleteDateColumn()
   public deletedAt: Date | null;
 
-  @OneToMany(() => Session, (session) => session.userId)
+  @OneToMany(() => Session, (session) => session.user, {
+    cascade: true,
+  })
   sessions: Session[];
 
   emailConfirm(code: string) {
