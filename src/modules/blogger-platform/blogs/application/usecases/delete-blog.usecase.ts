@@ -3,7 +3,7 @@ import { BlogsRepository } from '../../infrastructure/blogs.repository';
 import { NotFoundException } from '@nestjs/common';
 
 export class DeleteBlogCommand {
-  constructor(public id: string) {}
+  constructor(public id: number) {}
 }
 
 @CommandHandler(DeleteBlogCommand)

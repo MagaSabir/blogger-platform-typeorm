@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseIntPipe,
   ParseUUIDPipe,
   Post,
   Put,
@@ -29,6 +30,7 @@ import { UpdateBlogPostCommand } from '../../application/usecases/update-blog-po
 import { DeleteBlogPostCommand } from '../../application/usecases/delete-blog-post.usecase';
 import { PostQueryParams } from '../../../posts/api/input-dto/post-query-params';
 import { GetBlogPostsQuery } from '../../application/queries/get-blog-posts.query';
+import { GetBlogQuery } from '../../application/queries/get-blog.query';
 
 @Controller('sa/blogs')
 @UseGuards(BasicAuthGuard)
@@ -48,17 +50,17 @@ export class SaBlogsController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createPost(@Body() body: CreateBlogInputDto): Promise<BlogViewModel> {
-    return this.commandBus.execute(new CreateBlogCommand(body));
+    const blogId: number = await this.commandBus.execute(
+      new CreateBlogCommand(body),
+    );
+    return this.queryBus.execute(new GetBlogQuery(blogId));
   }
 
   @Put(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updatePost(
-    @Param(
-      'id',
-      new ParseUUIDPipe({ errorHttpStatusCode: HttpStatus.NOT_FOUND }),
-    )
-    id: string,
+    @Param('id', ParseIntPipe)
+    id: number,
     @Body() dto: CreateBlogInputDto,
   ): Promise<void> {
     await this.commandBus.execute(new UpdateBlogCommand(dto, id));
@@ -67,11 +69,8 @@ export class SaBlogsController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteBlog(
-    @Param(
-      'id',
-      new ParseUUIDPipe({ errorHttpStatusCode: HttpStatus.NOT_FOUND }),
-    )
-    id: string,
+    @Param('id', ParseIntPipe)
+    id: number,
   ): Promise<void> {
     await this.commandBus.execute(new DeleteBlogCommand(id));
   }
@@ -79,11 +78,8 @@ export class SaBlogsController {
   @Post(':id/posts')
   @HttpCode(HttpStatus.CREATED)
   async createPostByBlogId(
-    @Param(
-      'id',
-      new ParseUUIDPipe({ errorHttpStatusCode: HttpStatus.NOT_FOUND }),
-    )
-    id: string,
+    @Param('id', ParseIntPipe)
+    id: number,
     @Body() body: CreatePostInputDto,
   ): Promise<PostViewModel> {
     return this.commandBus.execute(new CreateBlogPostCommand(body, id));
@@ -93,7 +89,7 @@ export class SaBlogsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async updatePostByBlogId(
     @Body() body: CreatePostInputDto,
-    @Param() params: { blogId: string; postId: string },
+    @Param(ParseIntPipe) params: { blogId: number; postId: string },
   ): Promise<void> {
     await this.commandBus.execute(new UpdateBlogPostCommand(body, params));
   }
@@ -103,7 +99,7 @@ export class SaBlogsController {
   async deletePostByBlogId(
     @Param()
     params: {
-      blogId: string;
+      blogId: number;
       postId: string;
     },
   ): Promise<void> {

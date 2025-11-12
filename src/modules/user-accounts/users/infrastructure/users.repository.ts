@@ -1,7 +1,6 @@
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { UserDbModel } from '../api/view-dto/user-db-model';
 import { User } from '../entity/user.entity';
 
 @Injectable()
@@ -25,13 +24,16 @@ export class UsersRepository {
 
   async findUserByLoginOrEmailForAuth(
     loginOrEmail: string,
-  ): Promise<UserDbModel | null> {
-    const query = `SELECT * FROM "Users" WHERE login = $1 OR email = $2`;
-    const result: UserDbModel[] = await this.dataSource.query(query, [
-      loginOrEmail,
-      loginOrEmail,
-    ]);
-    return result.length ? result[0] : null;
+  ): Promise<User | null> {
+    // const query = `SELECT * FROM "Users" WHERE login = $1 OR email = $2`;
+    // const result: UserDbModel[] = await this.dataSource.query(query, [
+    //   loginOrEmail,
+    //   loginOrEmail,
+    // ]);
+    // return result.length ? result[0] : null;
+    return this.repo.findOne({
+      where: [{ login: loginOrEmail }, { email: loginOrEmail }],
+    });
   }
 
   async findUserOrThrowNotFound(id: number): Promise<User> {

@@ -1,13 +1,18 @@
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { BlogsQueryParams } from '../../api/input-validation-dto/blogs-query-params';
 import { BlogViewModel } from '../../application/queries/view-dto/blog.view-model';
 import { BasePaginatedResponse } from '../../../../../core/base-paginated-response';
 import { PostQueryParams } from '../../../posts/api/input-dto/post-query-params';
 import { PostViewModel } from '../../../posts/application/view-dto/post-view-model';
+import { User } from '../../../../user-accounts/users/entity/user.entity';
+import { Blog } from '../../entity/blog.entity';
 
 export class BlogsQueryRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(Blog) private userRepo: Repository<Blog>,
+  ) {}
 
   async getBlogs(
     queryParams: BlogsQueryParams,
@@ -42,10 +47,20 @@ export class BlogsQueryRepository {
     };
   }
 
-  async getBlog(id: string): Promise<BlogViewModel> {
-    const query = `SELECT * FROM "Blogs" WHERE id = $1`;
-    const result: BlogViewModel[] = await this.dataSource.query(query, [id]);
-    return result[0] ?? null;
+  async getBlog(id: number) {
+    const blog: Blog | undefined = await this.userRepo
+      .createQueryBuilder('u')
+      .select([
+        'u.id as "id"',
+        'u.name as "name"',
+        'u.description as "description"',
+        'u.websiteUrl as "websiteUrl"',
+        'u.createdAt as "createdAt"',
+        'u.isMembership as "isMembership"',
+      ])
+      .where('u.id = :id', { id })
+      .getRawOne();
+    return blog;
   }
 
   async getAllPostsById(
