@@ -16,7 +16,7 @@ export class PostsRepository {
 
   async createBlogPost(
     dto: CreatePostByBlogId,
-    blogId: string,
+    blogId: number,
     blogName: string,
   ): Promise<PostViewModel> {
     const result: PostViewModel[] = await this.dataSource.query(
@@ -32,7 +32,7 @@ export class PostsRepository {
   async updateBlogPost(
     dto: CreatePostByBlogId,
     postId: string,
-    blogId: string,
+    blogId: number,
   ): Promise<void> {
     const query = `
     UPDATE "Posts" 
@@ -49,7 +49,7 @@ export class PostsRepository {
     ]);
   }
 
-  async deleteBlogPost(blogId: string, postId: string) {
+  async deleteBlogPost(blogId: number, postId: string) {
     await this.dataSource.query(
       `DELETE FROM "Posts" WHERE "id" = $1 AND "blogId" = $2`,
       [postId, blogId],

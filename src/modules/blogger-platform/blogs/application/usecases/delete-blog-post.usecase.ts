@@ -6,7 +6,7 @@ import { PostViewModel } from '../../../posts/application/view-dto/post-view-mod
 import { BlogViewModel } from '../queries/view-dto/blog.view-model';
 
 export class DeleteBlogPostCommand {
-  constructor(public params: { blogId: string; postId: string }) {}
+  constructor(public params: { blogId: number; postId: string }) {}
 }
 
 @CommandHandler(DeleteBlogPostCommand)

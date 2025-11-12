@@ -9,7 +9,7 @@ import { PostViewModel } from '../../../posts/application/view-dto/post-view-mod
 export class UpdateBlogPostCommand {
   constructor(
     public dto: CreatePostByBlogId,
-    public params: { blogId: string; postId: string },
+    public params: { blogId: number; postId: string },
   ) {}
 }
 

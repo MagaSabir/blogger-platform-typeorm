@@ -31,6 +31,8 @@ import { UpdateCommentUserCase } from './comments/application/usecases/update-co
 import { DeleteCommentUseCase } from './comments/application/usecases/delete-comment.usecase';
 import { CommentLikesRepository } from './likes/comment-likes/infrastructure/comment-likes.repository';
 import { CommentSetLikeUseCase } from './comments/application/usecases/comment-set-like-use.case';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Blog } from './blogs/entity/blog.entity';
 
 const commandHandlers = [
   CreateBlogUseCase,
@@ -57,7 +59,7 @@ const queryHandlers = [
   GetPostCommentsQueryHandler,
 ];
 @Module({
-  imports: [CqrsModule],
+  imports: [TypeOrmModule.forFeature([Blog]), CqrsModule],
   providers: [
     ...queryHandlers,
     ...commandHandlers,

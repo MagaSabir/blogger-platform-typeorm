@@ -3,6 +3,7 @@ import {
   Get,
   HttpStatus,
   Param,
+  ParseIntPipe,
   ParseUUIDPipe,
   Query,
   UseGuards,
@@ -32,11 +33,8 @@ export class BlogsController {
 
   @Get(':id')
   async getBlog(
-    @Param(
-      'id',
-      new ParseUUIDPipe({ errorHttpStatusCode: HttpStatus.NOT_FOUND }),
-    )
-    id: string,
+    @Param('id', ParseIntPipe)
+    id: number,
   ): Promise<BlogViewModel> {
     return await this.queryBus.execute(new GetBlogQuery(id));
   }

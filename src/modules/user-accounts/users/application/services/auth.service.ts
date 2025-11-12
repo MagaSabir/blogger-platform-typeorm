@@ -2,6 +2,7 @@ import { UsersRepository } from '../../infrastructure/users.repository';
 import { PasswordService } from './password.service';
 import { UserDbModel } from '../../api/view-dto/user-db-model';
 import { Injectable } from '@nestjs/common';
+import { User } from '../../entity/user.entity';
 @Injectable()
 export class AuthService {
   constructor(
@@ -10,7 +11,7 @@ export class AuthService {
   ) {}
 
   async validateUser(loginOrEmail: string, password: string) {
-    const user: UserDbModel | null =
+    const user: User | null =
       await this.userRepository.findUserByLoginOrEmailForAuth(loginOrEmail);
     if (!user) {
       return null;
