@@ -29,6 +29,7 @@ import { throttlerSetup } from './setup/throtller.setup';
         database: coreConfig.database,
         autoLoadEntities: true,
         synchronize: true,
+        logging: true,
       }),
       inject: [CoreConfig],
     }),

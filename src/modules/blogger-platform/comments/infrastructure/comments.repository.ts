@@ -26,10 +26,10 @@ export class CommentsRepository {
 
   async createComment(
     content: string,
-    postId: string,
-    userId: string,
-  ): Promise<string> {
-    const result: [{ id: string }] = await this.dataSource.query(
+    postId: number,
+    userId: number,
+  ): Promise<number> {
+    const result: [{ id: number }] = await this.dataSource.query(
       `
     INSERT INTO "Comments" (content, "postId", "userId")
     VALUES ($1, $2, $3)

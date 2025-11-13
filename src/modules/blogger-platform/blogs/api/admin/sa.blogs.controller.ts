@@ -89,9 +89,12 @@ export class SaBlogsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async updatePostByBlogId(
     @Body() body: CreatePostInputDto,
-    @Param(ParseIntPipe) params: { blogId: number; postId: string },
+    @Param('blogId', ParseIntPipe) blogId: number,
+    @Param('postId', ParseIntPipe) postId: number,
   ): Promise<void> {
-    await this.commandBus.execute(new UpdateBlogPostCommand(body, params));
+    await this.commandBus.execute(
+      new UpdateBlogPostCommand(body, { blogId, postId }),
+    );
   }
 
   @Delete(':blogId/posts/:postId')
@@ -100,7 +103,7 @@ export class SaBlogsController {
     @Param()
     params: {
       blogId: number;
-      postId: string;
+      postId: number;
     },
   ): Promise<void> {
     await this.commandBus.execute(new DeleteBlogPostCommand(params));

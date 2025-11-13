@@ -8,7 +8,7 @@ import { NotFoundException } from '@nestjs/common';
 export class CommentsQueryRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
 
-  async getComment(id: string, userId?: string): Promise<CommentViewModel> {
+  async getComment(id: number, userId?: number): Promise<CommentViewModel> {
     const result: CommentViewModel[] = await this.dataSource.query(
       `
         SELECT ps.id,

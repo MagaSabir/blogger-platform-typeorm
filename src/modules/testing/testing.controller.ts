@@ -1,21 +1,20 @@
 import { Controller, Delete, HttpCode, HttpStatus } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { User } from '../user-accounts/users/entity/user.entity';
 import { Session } from '../user-accounts/sessions/entity/session.entity';
+import { Post } from '../blogger-platform/posts/entity/post.entity';
+import { Blog } from '../blogger-platform/blogs/entity/blog.entity';
 
 @Controller('testing')
 export class TestingController {
-  constructor(
-    @InjectRepository(User) private userRepo: Repository<User>,
-    @InjectRepository(Session) private sessionRepo: Repository<Session>,
-  ) {}
+  constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   @Delete('all-data')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteAll() {
-    await this.sessionRepo.deleteAll();
-
-    await this.userRepo.deleteAll();
+    await this.dataSource.query(`
+  TRUNCATE TABLE "Sessions", "Posts", "Blogs", "Users" RESTART IDENTITY CASCADE
+`);
   }
 }

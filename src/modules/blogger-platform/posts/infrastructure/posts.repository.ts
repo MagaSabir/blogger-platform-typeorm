@@ -1,17 +1,21 @@
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { CreatePostByBlogId } from '../../blogs/dto/create-post-by-blog-id.dto';
 import { PostViewModel } from '../application/view-dto/post-view-model';
+import { Post } from '../entity/post.entity';
 
 export class PostsRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(Post) private postRepo: Repository<Post>,
+  ) {}
 
-  async findPost(postId: string): Promise<PostViewModel | null> {
-    const result: PostViewModel[] = await this.dataSource.query(
-      `SELECT * FROM "Posts" WHERE id = $1`,
-      [postId],
-    );
-    return result[0] ?? null;
+  async findPost(postId: number): Promise<Post | null> {
+    return this.postRepo.findOne({ where: { id: postId } });
+  }
+
+  async save(post: Post) {
+    return this.postRepo.save(post);
   }
 
   async createBlogPost(
@@ -49,10 +53,7 @@ export class PostsRepository {
     ]);
   }
 
-  async deleteBlogPost(blogId: number, postId: string) {
-    await this.dataSource.query(
-      `DELETE FROM "Posts" WHERE "id" = $1 AND "blogId" = $2`,
-      [postId, blogId],
-    );
+  async deleteBlogPost(blogId: number, postId: number) {
+    await this.postRepo.softDelete({ blogId, id: postId });
   }
 }

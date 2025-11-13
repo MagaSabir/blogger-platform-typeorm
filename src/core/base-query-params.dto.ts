@@ -16,17 +16,17 @@ export class BaseQueryParams {
   })
   pageSize: number = 10;
 
-  @IsIn(['asc', 'desc'])
+  @IsIn(['ASC', 'DESC', 'asc', 'desc'])
   @ApiPropertyOptional({
     description: 'Sorting direction',
     enum: ['asc', 'desc'],
     example: 'desc',
   })
-  sortDirection: SortDirection = 'desc';
+  sortDirection: SortDirection = 'DESC';
 
   calculateSkip(): number {
     return (this.pageNumber - 1) * this.pageSize;
   }
 }
 
-export type SortDirection = 'asc' | 'desc';
+export type SortDirection = 'ASC' | 'DESC';
