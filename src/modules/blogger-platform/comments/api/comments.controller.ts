@@ -67,8 +67,8 @@ export class CommentsController {
   @Get(':id')
   @UseGuards(JwtOptionalAuthGuard)
   async getComment(
-    @Param('id') id: string,
-    @CurrentUserId() userId: string,
+    @Param('id') id: number,
+    @CurrentUserId() userId: number,
   ): Promise<CommentViewModel> {
     return this.queryBus.execute<GetPostCommentQuery, CommentViewModel>(
       new GetPostCommentQuery(id, userId),

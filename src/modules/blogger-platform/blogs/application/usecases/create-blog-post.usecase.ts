@@ -5,6 +5,7 @@ import { NotFoundException } from '@nestjs/common';
 import { PostsRepository } from '../../../posts/infrastructure/posts.repository';
 import { BlogViewModel } from '../queries/view-dto/blog.view-model';
 import { PostViewModel } from '../../../posts/application/view-dto/post-view-model';
+import { Post } from '../../../posts/entity/post.entity';
 
 export class CreateBlogPostCommand {
   constructor(
@@ -22,13 +23,13 @@ export class CreateBlogPostUseCase
     private postsRepository: PostsRepository,
   ) {}
 
-  async execute(command: CreateBlogPostCommand): Promise<PostViewModel> {
+  async execute(command: CreateBlogPostCommand): Promise<number> {
     const blog = await this.blogsRepository.findBlog(command.id);
     if (!blog) throw new NotFoundException();
-    return this.postsRepository.createBlogPost(
-      command.dto,
-      command.id,
-      blog.name,
-    );
+
+    const post = Post.createPost(command.dto, blog.id);
+
+    const createdPost = await this.postsRepository.save(post);
+    return createdPost.id;
   }
 }

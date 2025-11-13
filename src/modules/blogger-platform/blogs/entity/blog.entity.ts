@@ -3,9 +3,11 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { CreateBlogDto } from '../dto/create-blog-dto';
+import { Post } from '../../posts/entity/post.entity';
 
 @Entity('Blogs')
 export class Blog {
@@ -29,6 +31,11 @@ export class Blog {
 
   @DeleteDateColumn()
   public deletedAt: Date | null;
+
+  @OneToMany(() => Post, (post) => post.blog, {
+    cascade: true,
+  })
+  posts: Post[];
 
   updateBlog(dto: CreateBlogDto) {
     this.name = dto.name;

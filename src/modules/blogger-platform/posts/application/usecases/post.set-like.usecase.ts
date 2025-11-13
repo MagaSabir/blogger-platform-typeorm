@@ -7,9 +7,9 @@ import { LikeStatus } from '../view-dto/post-view-model';
 
 export class PostSetLikeCommand {
   constructor(
-    public id: string,
+    public id: number,
     public status: LikeStatus,
-    public userId: string,
+    public userId: number,
   ) {}
 }
 

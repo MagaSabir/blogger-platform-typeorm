@@ -5,38 +5,58 @@ import { BlogViewModel } from '../../application/queries/view-dto/blog.view-mode
 import { BasePaginatedResponse } from '../../../../../core/base-paginated-response';
 import { PostQueryParams } from '../../../posts/api/input-dto/post-query-params';
 import { PostViewModel } from '../../../posts/application/view-dto/post-view-model';
-import { User } from '../../../../user-accounts/users/entity/user.entity';
 import { Blog } from '../../entity/blog.entity';
 
 export class BlogsQueryRepository {
   constructor(
     @InjectDataSource() private dataSource: DataSource,
-    @InjectRepository(Blog) private userRepo: Repository<Blog>,
+    @InjectRepository(Blog) private blogRepository: Repository<Blog>,
   ) {}
 
   async getBlogs(
     queryParams: BlogsQueryParams,
   ): Promise<BasePaginatedResponse<BlogViewModel>> {
-    const query = `SELECT * FROM "Blogs"
-                    WHERE ($1::text IS NULL OR name ILIKE '%' || $1 || '%')
-                    ORDER BY "${queryParams.sortBy}" ${queryParams.sortDirection}
-                    LIMIT $2 OFFSET $3`;
+    // const query = `SELECT * FROM "Blogs"
+    //                 WHERE ($1::text IS NULL OR name ILIKE '%' || $1 || '%')
+    //                 ORDER BY "${queryParams.sortBy}" ${queryParams.sortDirection}
+    //                 LIMIT $2 OFFSET $3`;
+    //
+    // const count = `
+    // SELECT COUNT(*) as "totalCount" FROM "Blogs" WHERE ($1::text IS NULL OR name ILIKE '%' || $1 || '%')`;
+    //
+    // const [items, totalCountResult] = await Promise.all([
+    //   this.dataSource.query<BlogViewModel[]>(query, [
+    //     queryParams.searchNameTerm,
+    //     queryParams.pageSize,
+    //     queryParams.calculateSkip(),
+    //   ]),
+    //   this.dataSource.query<{ totalCount: string }[]>(count, [
+    //     queryParams.searchNameTerm,
+    //   ]),
+    // ]);
+    //
+    // const totalCount: number = parseInt(totalCountResult[0].totalCount);
 
-    const count = `
-    SELECT COUNT(*) as "totalCount" FROM "Blogs" WHERE ($1::text IS NULL OR name ILIKE '%' || $1 || '%')`;
-
-    const [items, totalCountResult] = await Promise.all([
-      this.dataSource.query<BlogViewModel[]>(query, [
-        queryParams.searchNameTerm,
-        queryParams.pageSize,
-        queryParams.calculateSkip(),
-      ]),
-      this.dataSource.query<{ totalCount: string }[]>(count, [
-        queryParams.searchNameTerm,
-      ]),
-    ]);
-
-    const totalCount: number = parseInt(totalCountResult[0].totalCount);
+    const query2 = this.blogRepository
+      .createQueryBuilder('b')
+      .select([
+        'b.id as "id"',
+        'b.name as "name"',
+        'b.description as "description"',
+        'b.websiteUrl as "websiteUrl"',
+        'b.createdAt as "createdAt"',
+        'b.isMembership as "isMembership"',
+      ])
+      .orderBy({ [`"${queryParams.sortBy}"`]: queryParams.sortDirection })
+      .take(queryParams.pageSize)
+      .skip(queryParams.calculateSkip());
+    if (queryParams.searchNameTerm) {
+      query2.andWhere('b.name ILIKE :name', {
+        name: `%${queryParams.searchNameTerm}%`,
+      });
+    }
+    const items: BlogViewModel[] = await query2.getRawMany();
+    const totalCount = await query2.getCount();
 
     return {
       pagesCount: Math.ceil(totalCount / queryParams.pageSize),
@@ -48,7 +68,7 @@ export class BlogsQueryRepository {
   }
 
   async getBlog(id: number) {
-    const blog: Blog | undefined = await this.userRepo
+    const blog: Blog | undefined = await this.blogRepository
       .createQueryBuilder('u')
       .select([
         'u.id as "id"',

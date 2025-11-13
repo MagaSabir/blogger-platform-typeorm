@@ -7,8 +7,8 @@ export class PostLikesRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async finUserLikeByPostId(
-    id: string,
-    userId: string,
+    id: number,
+    userId: number,
   ): Promise<PostLikeType | null> {
     const result: PostLikeType[] = await this.dataSource.query(
       `
@@ -19,7 +19,7 @@ export class PostLikesRepository {
     return result[0] ?? null;
   }
 
-  async setPostLike(id: string, userId: string, status: LikeStatus) {
+  async setPostLike(id: number, userId: number, status: LikeStatus) {
     await this.dataSource.query(
       `
     UPDATE "PostLikes" SET status = $3, "addedAt" = now() WHERE "postId" = $1 AND "userId" = $2
@@ -28,7 +28,7 @@ export class PostLikesRepository {
     );
   }
 
-  async setNewPostLike(id: string, userId: string, status: LikeStatus) {
+  async setNewPostLike(id: number, userId: number, status: LikeStatus) {
     await this.dataSource.query(
       `INSERT INTO "PostLikes" ("postId", "userId", status)
     VALUES ($1, $2, $3)`,

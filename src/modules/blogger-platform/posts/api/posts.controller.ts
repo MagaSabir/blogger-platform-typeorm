@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseIntPipe,
   Post,
   Put,
   Query,
@@ -66,9 +67,9 @@ export class PostsController {
   @Post(':id/comments')
   @UseGuards(JwtAuthGuard)
   async createComment(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() dto: PostCommentInputDto,
-    @CurrentUserId() userId: string,
+    @CurrentUserId(ParseIntPipe) userId: number,
   ): Promise<CommentViewModel> {
     return this.commandBus.execute<GetPostCommentQuery, CommentViewModel>(
       new CreateCommentCommand(id, dto, userId),
@@ -79,9 +80,9 @@ export class PostsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtAuthGuard)
   async setPostLike(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() dto: LikeStatusInputDto,
-    @CurrentUserId() userId: string,
+    @CurrentUserId(ParseIntPipe) userId: number,
   ) {
     await this.commandBus.execute(
       new PostSetLikeCommand(id, dto.likeStatus, userId),

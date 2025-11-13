@@ -6,12 +6,13 @@ import { NotFoundException } from '@nestjs/common';
 import { CommentsQueryRepository } from '../../../comments/infrastructure/comments.query-repository';
 import { CommentViewModel } from '../../../comments/api/view-models/comment-view-model';
 import { PostViewModel } from '../view-dto/post-view-model';
+import { Post } from '../../entity/post.entity';
 
 export class CreateCommentCommand {
   constructor(
-    public id: string,
+    public id: number,
     public dto: PostCommentInputDto,
-    public userId: string,
+    public userId: number,
   ) {}
 }
 
@@ -26,12 +27,10 @@ export class CreateCommentUseCase
   ) {}
 
   async execute(command: CreateCommentCommand): Promise<CommentViewModel> {
-    const post: PostViewModel | null = await this.postsRepository.findPost(
-      command.id,
-    );
+    const post: Post | null = await this.postsRepository.findPost(command.id);
 
     if (!post) throw new NotFoundException();
-    const id: string = await this.commentsRepository.createComment(
+    const id = await this.commentsRepository.createComment(
       command.dto.content,
       command.id,
       command.userId,

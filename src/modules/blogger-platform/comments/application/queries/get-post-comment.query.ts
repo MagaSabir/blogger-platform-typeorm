@@ -5,8 +5,8 @@ import { NotFoundException } from '@nestjs/common';
 
 export class GetPostCommentQuery {
   constructor(
-    public id: string,
-    public userId: string,
+    public id: number,
+    public userId: number,
   ) {}
 }
 
