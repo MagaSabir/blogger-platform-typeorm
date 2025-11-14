@@ -40,7 +40,7 @@ export class BlogsQueryRepository {
     const query2 = this.blogRepository
       .createQueryBuilder('b')
       .select([
-        'b.id as "id"',
+        'b.id::text as "id"',
         'b.name as "name"',
         'b.description as "description"',
         'b.websiteUrl as "websiteUrl"',
