@@ -1,11 +1,15 @@
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { PostQueryParams } from '../../api/input-dto/post-query-params';
 import { PostViewModel } from '../../application/view-dto/post-view-model';
 import { BasePaginatedResponse } from '../../../../../core/base-paginated-response';
+import { Post } from '../../entity/post.entity';
 
 export class PostsQueryRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(Post) private postRepo: Repository<Post>,
+  ) {}
 
   async getAllPosts(
     queryParams: PostQueryParams,
@@ -76,48 +80,64 @@ export class PostsQueryRepository {
     postId: string,
     userId?: string,
   ): Promise<PostViewModel | null> {
-    const query = `SELECT p.id,
-                          p.title,
-                          p."shortDescription",
-                          p.content,
-                          p."blogId",
-                          p."blogName",
-                          p."createdAt",
-                          JSONB_BUILD_OBJECT(
-                                  'likesCount', COUNT(DISTINCT pl."userId"),
-                                  'dislikesCount', COUNT(DISTINCT pd."userId"),
-                                  'myStatus',  COALESCE((
-                                                            SELECT ps2.status
-                                                            FROM "PostLikes" ps2
-                                                            WHERE ps2."postId" = p.id
-                                                              AND ps2."userId" = $1),'None'),
-                                  'newestLikes', COALESCE((SELECT JSONB_AGG(
-                                                                          JSONB_BUILD_OBJECT(
-                                                                                  'addedAt', pl2."addedAt",
-                                                                                  'userId', pl2."userId",
-                                                                                  'login',
-                                                                                  u.login --(SELECT u.login FROM "Users" u WHERE u.id = pl2."userId" )
-                                                                          )
-                                                                  )
-                                                           FROM (SELECT "addedAt", "userId"
-                                                                 FROM "PostLikes"
-                                                                 WHERE "postId" = p.id
-                                                                   AND status = 'Like'
-                                                                 ORDER BY "addedAt" DESC
-                                                                 LIMIT 3) pl2
-                                                                    LEFT JOIN "Users" u ON u.id = pl2."userId"), '[]')
-                          ) as "extendedLikesInfo"
-                   FROM "Posts" p
-                   LEFT JOIN "PostLikes" pl ON p.id = pl."postId" AND pl.status = 'Like'
-                   LEFT JOIN "PostLikes" pd ON p.id = pd."postId" AND pd.status = 'Dislike'
-                   WHERE p.id = $2
-                   GROUP BY p.id, p.title, p."shortDescription", p.content, p."blogId", p."blogName", p."createdAt"
-    `;
-    const result: PostViewModel[] = await this.dataSource.query(query, [
-      userId,
-      postId,
-    ]);
-    return result[0];
+    // const query = `SELECT p.id,
+    //                       p.title,
+    //                       p."shortDescription",
+    //                       p.content,
+    //                       p."blogId",
+    //                       p."blogName",
+    //                       p."createdAt",
+    //                       JSONB_BUILD_OBJECT(
+    //                               'likesCount', COUNT(DISTINCT pl."userId"),
+    //                               'dislikesCount', COUNT(DISTINCT pd."userId"),
+    //                               'myStatus',  COALESCE((
+    //                                                         SELECT ps2.status
+    //                                                         FROM "PostLikes" ps2
+    //                                                         WHERE ps2."postId" = p.id
+    //                                                           AND ps2."userId" = $1),'None'),
+    //                               'newestLikes', COALESCE((SELECT JSONB_AGG(
+    //                                                                       JSONB_BUILD_OBJECT(
+    //                                                                               'addedAt', pl2."addedAt",
+    //                                                                               'userId', pl2."userId",
+    //                                                                               'login',
+    //                                                                               u.login --(SELECT u.login FROM "Users" u WHERE u.id = pl2."userId" )
+    //                                                                       )
+    //                                                               )
+    //                                                        FROM (SELECT "addedAt", "userId"
+    //                                                              FROM "PostLikes"
+    //                                                              WHERE "postId" = p.id
+    //                                                                AND status = 'Like'
+    //                                                              ORDER BY "addedAt" DESC
+    //                                                              LIMIT 3) pl2
+    //                                                                 LEFT JOIN "Users" u ON u.id = pl2."userId"), '[]')
+    //                       ) as "extendedLikesInfo"
+    //                FROM "Posts" p
+    //                LEFT JOIN "PostLikes" pl ON p.id = pl."postId" AND pl.status = 'Like'
+    //                LEFT JOIN "PostLikes" pd ON p.id = pd."postId" AND pd.status = 'Dislike'
+    //                WHERE p.id = $2
+    //                GROUP BY p.id, p.title, p."shortDescription", p.content, p."blogId", p."blogName", p."createdAt"
+    // `;
+    // const result: PostViewModel[] = await this.dataSource.query(query, [
+    //   userId,
+    //   postId,
+    // ]);
+    // return result[0];
+    const builder = this.postRepo
+      .createQueryBuilder('p')
+      .leftJoin('p.blog', 'b')
+      .select([
+        'p.id::text AS id',
+        'p.title AS title',
+        'p."shortDescription" AS "shortDescription"',
+        'p.content AS content',
+        'p."blogId" AS "blogId"',
+        'b.name AS "blogName"',
+        'p.createdAt AS "createdAt"',
+      ])
+      .where('p.id = :postId', { postId });
+
+    const post = await builder.getRawOne();
+    return PostViewModel.mapToView(post);
   }
 
   async getBlogPosts(

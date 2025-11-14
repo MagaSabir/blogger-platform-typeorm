@@ -31,6 +31,7 @@ import { DeleteBlogPostCommand } from '../../application/usecases/delete-blog-po
 import { PostQueryParams } from '../../../posts/api/input-dto/post-query-params';
 import { GetBlogPostsQuery } from '../../application/queries/get-blog-posts.query';
 import { GetBlogQuery } from '../../application/queries/get-blog.query';
+import { GetBlogPostQuery } from '../../application/queries/get-blog-post.query';
 
 @Controller('sa/blogs')
 @UseGuards(BasicAuthGuard)
@@ -82,7 +83,12 @@ export class SaBlogsController {
     id: number,
     @Body() body: CreatePostInputDto,
   ): Promise<PostViewModel> {
-    return this.commandBus.execute(new CreateBlogPostCommand(body, id));
+    const postId: number = await this.commandBus.execute<
+      CreateBlogPostCommand,
+      number
+    >(new CreateBlogPostCommand(body, id));
+    //TODO вернуть созданный пост
+    return this.queryBus.execute(new GetBlogPostQuery(postId));
   }
 
   @Put(':blogId/posts/:postId')

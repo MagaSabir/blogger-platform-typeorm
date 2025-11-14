@@ -27,9 +27,9 @@ export class CreateBlogPostUseCase
     const blog = await this.blogsRepository.findBlog(command.id);
     if (!blog) throw new NotFoundException();
 
-    const post = Post.createPost(command.dto, blog.id);
+    const post: Post = Post.createPost(command.dto, blog.id);
 
-    const createdPost = await this.postsRepository.save(post);
+    const createdPost: Post = await this.postsRepository.save(post);
     return createdPost.id;
   }
 }
