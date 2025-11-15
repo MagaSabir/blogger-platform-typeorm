@@ -106,19 +106,18 @@ export class SaBlogsController {
   @Delete(':blogId/posts/:postId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deletePostByBlogId(
-    @Param()
-    params: {
-      blogId: number;
-      postId: number;
-    },
+    @Param('blogId', ParseIntPipe) blogId: number,
+    @Param('postId', ParseIntPipe) postId: number,
   ): Promise<void> {
-    await this.commandBus.execute(new DeleteBlogPostCommand(params));
+    await this.commandBus.execute(
+      new DeleteBlogPostCommand({ blogId, postId }),
+    );
   }
 
   @Get(':id/posts')
   async getBlogPost(
     @Query() query: PostQueryParams,
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
   ): Promise<BasePaginatedResponse<PostViewModel>> {
     return this.queryBus.execute(new GetBlogPostsQuery(query, id));
   }

@@ -14,7 +14,7 @@ export class Blog {
   @PrimaryGeneratedColumn()
   public id: number;
 
-  @Column({ type: 'varchar', length: 15 })
+  @Column({ collation: 'C', type: 'varchar', length: 15 })
   public name: string;
 
   @Column({ type: 'varchar', length: 500 })

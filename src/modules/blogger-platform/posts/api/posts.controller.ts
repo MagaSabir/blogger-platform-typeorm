@@ -40,7 +40,7 @@ export class PostsController {
   @UseGuards(JwtOptionalAuthGuard)
   async getPosts(
     @Query() query: PostQueryParams,
-    @CurrentUserId() userId: string,
+    @CurrentUserId() userId: number,
   ): Promise<BasePaginatedResponse<PostViewModel[]>> {
     return this.queryBus.execute(new GetAllPostsQuery(query, userId));
   }
@@ -48,8 +48,8 @@ export class PostsController {
   @Get(':id')
   @UseGuards(JwtOptionalAuthGuard)
   async getPost(
-    @Param('id') id: string,
-    @CurrentUserId() userId: string,
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUserId() userId: number,
   ): Promise<PostViewModel> {
     return this.queryBus.execute(new GetPostQuery(id, userId));
   }
@@ -69,7 +69,7 @@ export class PostsController {
   async createComment(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: PostCommentInputDto,
-    @CurrentUserId(ParseIntPipe) userId: number,
+    @CurrentUserId() userId: number,
   ): Promise<CommentViewModel> {
     return this.commandBus.execute<GetPostCommentQuery, CommentViewModel>(
       new CreateCommentCommand(id, dto, userId),
@@ -82,7 +82,7 @@ export class PostsController {
   async setPostLike(
     @Param('id') id: number,
     @Body() dto: LikeStatusInputDto,
-    @CurrentUserId(ParseIntPipe) userId: number,
+    @CurrentUserId() userId: number,
   ) {
     await this.commandBus.execute(
       new PostSetLikeCommand(id, dto.likeStatus, userId),

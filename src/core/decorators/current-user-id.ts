@@ -5,6 +5,9 @@ import { AuthenticatedRequest } from '../interfaces/authenticated-request';
 export const CurrentUserId = createParamDecorator(
   (data: unknown, context: ExecutionContext) => {
     const request: AuthenticatedRequest = context.switchToHttp().getRequest();
-    return request.user?.id || null;
+    const id = request.user?.id;
+    const numericId = Number(id);
+
+    return numericId || null;
   },
 );

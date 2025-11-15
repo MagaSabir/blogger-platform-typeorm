@@ -4,59 +4,44 @@ import { BlogsQueryParams } from '../../api/input-validation-dto/blogs-query-par
 import { BlogViewModel } from '../../application/queries/view-dto/blog.view-model';
 import { BasePaginatedResponse } from '../../../../../core/base-paginated-response';
 import { PostQueryParams } from '../../../posts/api/input-dto/post-query-params';
-import { PostViewModel } from '../../../posts/application/view-dto/post-view-model';
 import { Blog } from '../../entity/blog.entity';
+import { Post } from '../../../posts/entity/post.entity';
+import { PostViewModel } from '../../../posts/application/view-dto/post-view-model';
 
 export class BlogsQueryRepository {
   constructor(
     @InjectDataSource() private dataSource: DataSource,
     @InjectRepository(Blog) private blogRepository: Repository<Blog>,
+    @InjectRepository(Post) private postRepository: Repository<Post>,
   ) {}
 
   async getBlogs(
     queryParams: BlogsQueryParams,
   ): Promise<BasePaginatedResponse<BlogViewModel>> {
-    // const query = `SELECT * FROM "Blogs"
-    //                 WHERE ($1::text IS NULL OR name ILIKE '%' || $1 || '%')
-    //                 ORDER BY "${queryParams.sortBy}" ${queryParams.sortDirection}
-    //                 LIMIT $2 OFFSET $3`;
-    //
-    // const count = `
-    // SELECT COUNT(*) as "totalCount" FROM "Blogs" WHERE ($1::text IS NULL OR name ILIKE '%' || $1 || '%')`;
-    //
-    // const [items, totalCountResult] = await Promise.all([
-    //   this.dataSource.query<BlogViewModel[]>(query, [
-    //     queryParams.searchNameTerm,
-    //     queryParams.pageSize,
-    //     queryParams.calculateSkip(),
-    //   ]),
-    //   this.dataSource.query<{ totalCount: string }[]>(count, [
-    //     queryParams.searchNameTerm,
-    //   ]),
-    // ]);
-    //
-    // const totalCount: number = parseInt(totalCountResult[0].totalCount);
-
-    const query2 = this.blogRepository
+    const query = this.blogRepository
       .createQueryBuilder('b')
       .select([
-        'b.id::text as "id"',
-        'b.name as "name"',
-        'b.description as "description"',
+        'b.id as id',
+        'b.name as name',
+        'b.description as description',
         'b.websiteUrl as "websiteUrl"',
         'b.createdAt as "createdAt"',
         'b.isMembership as "isMembership"',
       ])
       .orderBy({ [`"${queryParams.sortBy}"`]: queryParams.sortDirection })
-      .take(queryParams.pageSize)
-      .skip(queryParams.calculateSkip());
+      .offset(queryParams.calculateSkip())
+      .limit(queryParams.pageSize);
+
     if (queryParams.searchNameTerm) {
-      query2.andWhere('b.name ILIKE :name', {
+      query.andWhere('b.name ILIKE :name', {
         name: `%${queryParams.searchNameTerm}%`,
       });
     }
-    const items: BlogViewModel[] = await query2.getRawMany();
-    const totalCount = await query2.getCount();
+    const totalCount = await query.getCount();
+
+    const blogs: Blog[] = await query.getRawMany();
+
+    const items: BlogViewModel[] = BlogViewModel.mapToViewModels(blogs);
 
     return {
       pagesCount: Math.ceil(totalCount / queryParams.pageSize),
@@ -80,62 +65,34 @@ export class BlogsQueryRepository {
       ])
       .where('u.id = :id', { id })
       .getRawOne();
-    return blog;
+    if (blog) return BlogViewModel.mapToView(blog);
   }
 
   async getAllPostsById(
-    id: string,
+    blogId: number,
     queryParams: PostQueryParams,
-    userId: string,
+    userId: number,
   ) {
-    const query = `SELECT p.id,
-               p.title,
-               p."shortDescription",
-               p.content,
-               p."blogId",
-               p."blogName",
-               p."createdAt",
-               JSONB_BUILD_OBJECT(
-                       'likesCount', (SELECT COUNT(*) FROM "PostLikes" WHERE "postId" = p.id AND status = 'Like'),
-                       'dislikesCount', (SELECT COUNT(*) FROM "PostLikes" WHERE "postId" = p.id AND status = 'Dislike'),
-                       'myStatus',  COALESCE((
-                                    SELECT ps2.status
-                                    FROM "PostLikes" ps2
-                                    WHERE ps2."postId" = p.id
-                                      AND ps2."userId" = $3),'None'),
-                       'newestLikes', COALESCE(
-                               (SELECT JSONB_AGG(
-                                               JSONB_BUILD_OBJECT(
-                                                       'addedAt', pl2."addedAt",
-                                                       'userId', pl2."userId",
-                                                       'login', u.login
-                                               )
-                                       )
-                                FROM (SELECT "addedAt", "userId"
-                                      FROM "PostLikes"
-                                      WHERE "postId" = p.id
-                                        AND status = 'Like'
-                                      ORDER BY "addedAt" DESC
-                                      LIMIT 3) pl2
-                                         LEFT JOIN "Users" u ON pl2."userId" = u.id),'[]'
-                )
-               ) as "extendedLikesInfo"
-        FROM "Posts" p
-        WHERE p."blogId" = $4
-    ORDER BY "${queryParams.sortBy}" ${queryParams.sortDirection}
-    LIMIT $1 OFFSET $2`;
-    const items: PostViewModel[] = await this.dataSource.query(query, [
-      queryParams.pageSize,
-      queryParams.calculateSkip(),
-      userId,
-      id,
-    ]);
-    const count: { totalCount: string }[] = await this.dataSource.query(
-      `SELECT COUNT(*) as "totalCount" FROM "Posts" WHERE "blogId" = $1`,
-      [id],
-    );
+    const query = await this.postRepository
+      .createQueryBuilder('p')
+      .leftJoin('p.blog', 'b')
+      .select([
+        'p.id AS id',
+        'p.title AS title',
+        'p."shortDescription" AS "shortDescription"',
+        'p.content AS content',
+        'p."blogId" AS "blogId"',
+        'b.name AS "blogName"',
+        'p.createdAt AS "createdAt"',
+      ])
+      .where('p."blogId" = :blogId', { blogId })
+      .orderBy({ [`"${queryParams.sortBy}"`]: queryParams.sortDirection })
+      .offset(queryParams.calculateSkip())
+      .limit(queryParams.pageSize)
+      .getRawMany();
 
-    const totalCount: number = parseInt(count[0].totalCount);
+    const totalCount = await this.postRepository.count({ where: { blogId } });
+    const items = PostViewModel.mapToViewModels(query);
     return {
       pagesCount: Math.ceil(totalCount / queryParams.pageSize),
       page: queryParams.pageNumber,
