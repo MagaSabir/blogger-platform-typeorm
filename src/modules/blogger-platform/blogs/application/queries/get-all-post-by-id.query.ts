@@ -6,9 +6,9 @@ import { PostViewModel } from '../../../posts/application/view-dto/post-view-mod
 
 export class GetAllPostByIdQuery {
   constructor(
-    public id: string,
+    public id: number,
     public queryParams: PostQueryParams,
-    public userId: string,
+    public userId: number,
   ) {}
 }
 

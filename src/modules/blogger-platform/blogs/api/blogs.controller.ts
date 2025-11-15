@@ -42,14 +42,11 @@ export class BlogsController {
   @Get(':id/posts')
   @UseGuards(JwtOptionalAuthGuard)
   async getPostsByBlogId(
-    @Param(
-      'id',
-      new ParseUUIDPipe({ errorHttpStatusCode: HttpStatus.NOT_FOUND }),
-    )
-    id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Query() query: PostQueryParams,
-    @CurrentUserId() userId: string,
+    @CurrentUserId() userId: number,
   ): Promise<BasePaginatedResponse<PostViewModel>> {
+    console.log(id);
     return await this.queryBus.execute(
       new GetAllPostByIdQuery(id, query, userId),
     );

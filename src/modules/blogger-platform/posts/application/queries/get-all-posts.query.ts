@@ -7,7 +7,7 @@ import { PostViewModel } from '../view-dto/post-view-model';
 export class GetAllPostsQuery {
   constructor(
     public queryParams: PostQueryParams,
-    public userId: string,
+    public userId: number,
   ) {}
 }
 

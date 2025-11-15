@@ -7,7 +7,7 @@ import { PostViewModel } from '../../../posts/application/view-dto/post-view-mod
 export class GetBlogPostsQuery {
   constructor(
     public queryParams: PostQueryParams,
-    public id: string,
+    public id: number,
   ) {}
 }
 

@@ -1,15 +1,17 @@
 import { Type } from 'class-transformer';
-import { IsIn, IsNumber } from 'class-validator';
+import { IsIn, IsNumber, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class BaseQueryParams {
   @Type(() => Number)
   @IsNumber()
+  @Min(1)
   @ApiProperty({ required: false, default: 1 })
   pageNumber: number = 1;
 
   @Type(() => Number)
   @IsNumber()
+  @Min(1)
   @ApiProperty({
     required: false,
     default: 10,
