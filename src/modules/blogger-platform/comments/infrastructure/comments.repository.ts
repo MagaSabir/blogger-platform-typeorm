@@ -1,10 +1,14 @@
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { CommentViewModel } from '../api/view-models/comment-view-model';
 import { CommentModelType } from '../types/comment-model.type';
+import { Comment } from '../entity/comment.entity';
 
 export class CommentsRepository {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private dataSource: DataSource,
+    @InjectRepository(Comment) private commentRepo: Repository<Comment>,
+  ) {}
 
   async updateComment(commentId: string, content: string) {
     await this.dataSource.query(
@@ -24,6 +28,9 @@ export class CommentsRepository {
     );
   }
 
+  async save(comment: Comment) {
+    return this.commentRepo.save(comment);
+  }
   async createComment(
     content: string,
     postId: number,

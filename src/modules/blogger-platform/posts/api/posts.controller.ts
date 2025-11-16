@@ -70,10 +70,11 @@ export class PostsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: PostCommentInputDto,
     @CurrentUserId() userId: number,
-  ): Promise<CommentViewModel> {
-    return this.commandBus.execute<GetPostCommentQuery, CommentViewModel>(
+  ) {
+    const commentId: number = await this.commandBus.execute(
       new CreateCommentCommand(id, dto, userId),
     );
+    // return this.queryBus.execute(new GetPostCommentQuery(commentId, userId));
   }
 
   @Put(':id/like-status')

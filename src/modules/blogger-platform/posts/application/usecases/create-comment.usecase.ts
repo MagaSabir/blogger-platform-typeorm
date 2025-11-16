@@ -5,12 +5,12 @@ import { PostsRepository } from '../../infrastructure/posts.repository';
 import { NotFoundException } from '@nestjs/common';
 import { CommentsQueryRepository } from '../../../comments/infrastructure/comments.query-repository';
 import { CommentViewModel } from '../../../comments/api/view-models/comment-view-model';
-import { PostViewModel } from '../view-dto/post-view-model';
 import { Post } from '../../entity/post.entity';
+import { Comment } from '../../../comments/entity/comment.entity';
 
 export class CreateCommentCommand {
   constructor(
-    public id: number,
+    public postId: number,
     public dto: PostCommentInputDto,
     public userId: number,
   ) {}
@@ -26,16 +26,14 @@ export class CreateCommentUseCase
     private commentQueryRepository: CommentsQueryRepository,
   ) {}
 
-  async execute(command: CreateCommentCommand): Promise<CommentViewModel> {
-    const post: Post | null = await this.postsRepository.findPost(command.id);
+  async execute(command: CreateCommentCommand): Promise<number> {
+    const { postId, dto, userId } = command;
+    const post = await this.postsRepository.findPost(command.postId);
 
     if (!post) throw new NotFoundException();
-    const id = await this.commentsRepository.createComment(
-      command.dto.content,
-      command.id,
-      command.userId,
-    );
 
-    return this.commentQueryRepository.getComment(id, command.userId);
+    const comment = Comment.createComment(userId, postId, dto.content);
+    const createdComment = await this.commentsRepository.save(comment);
+    return createdComment.id;
   }
 }
