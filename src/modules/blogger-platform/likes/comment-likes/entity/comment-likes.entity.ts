@@ -12,17 +12,17 @@ import { Post } from '../../../posts/entity/post.entity';
 import { LikeStatus } from '../../../posts/application/view-dto/post-view-model';
 import { Comment } from '../../../comments/entity/comment.entity';
 
-@Entity('CommentLike')
+@Entity('CommentLikes')
 export class CommentLike {
   @PrimaryGeneratedColumn()
   public id: number;
 
   @ManyToOne(() => Comment)
-  @JoinColumn({ name: 'postId' })
+  @JoinColumn({ name: 'commentId' })
   post: Post;
 
   @Column()
-  public postId: number;
+  public commentId: number;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'userId' })

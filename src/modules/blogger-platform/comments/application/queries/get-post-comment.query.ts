@@ -17,11 +17,9 @@ export class GetPostCommentQueryHandler
   constructor(private commentsQueryRepository: CommentsQueryRepository) {}
 
   async execute(query: GetPostCommentQuery): Promise<CommentViewModel> {
-    const comment = await this.commentsQueryRepository.getComment(
-      query.id,
-      query.userId,
-    );
+    const comment: CommentViewModel | null =
+      await this.commentsQueryRepository.getComment(query.id, query.userId);
     if (!comment) throw new NotFoundException();
-    return this.commentsQueryRepository.getComment(query.id, query.userId);
+    return comment;
   }
 }

@@ -74,7 +74,7 @@ export class PostsController {
     const commentId: number = await this.commandBus.execute(
       new CreateCommentCommand(id, dto, userId),
     );
-    // return this.queryBus.execute(new GetPostCommentQuery(commentId, userId));
+    return this.queryBus.execute(new GetPostCommentQuery(commentId, userId));
   }
 
   @Put(':id/like-status')

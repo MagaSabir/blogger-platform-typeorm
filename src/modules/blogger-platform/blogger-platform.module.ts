@@ -36,8 +36,8 @@ import { Blog } from './blogs/entity/blog.entity';
 import { Post } from './posts/entity/post.entity';
 import { GetBlogPostQueryHandler } from './blogs/application/queries/get-blog-post.query';
 import { Comment } from './comments/entity/comment.entity';
-import { PostLike } from './likes/comment-likes/entity/post-likes.entity';
-import { CommentLike } from './likes/posts-likes/entity/comment-likes.entity';
+import { PostLike } from './likes/posts-likes/entity/post-likes.entity';
+import { CommentLike } from './likes/comment-likes/entity/comment-likes.entity';
 
 const commandHandlers = [
   CreateBlogUseCase,
