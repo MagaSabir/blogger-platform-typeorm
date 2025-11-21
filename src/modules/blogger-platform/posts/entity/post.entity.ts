@@ -5,11 +5,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Blog } from '../../blogs/entity/blog.entity';
 import { CreatePostByBlogId } from '../../blogs/dto/create-post-by-blog-id.dto';
 import { UpdatePostDto } from '../dto/update-post.dto';
+import { PostLike } from '../../likes/posts-likes/entity/post-likes.entity';
 
 @Entity('Posts')
 export class Post {
@@ -37,6 +39,9 @@ export class Post {
 
   @Column()
   public blogId: number;
+
+  @OneToMany(() => PostLike, (pl) => pl.post)
+  likes: PostLike[];
 
   updatePost(dto: UpdatePostDto) {
     this.title = dto.title;

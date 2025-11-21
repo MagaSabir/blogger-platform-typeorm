@@ -16,7 +16,7 @@ export class PostLike {
   @PrimaryGeneratedColumn()
   public id: number;
 
-  @ManyToOne(() => Post)
+  @ManyToOne(() => Post, (post) => post.likes)
   @JoinColumn({ name: 'postId' })
   post: Post;
 
