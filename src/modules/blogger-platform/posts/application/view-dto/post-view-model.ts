@@ -6,6 +6,17 @@ export enum LikeStatus {
   Dislike = 'Dislike',
   None = 'None',
 }
+
+export type PostType = {
+  id: number;
+  title: string;
+  shortDescription: string;
+  content: string;
+  blogId: number;
+  blogName: string;
+  createdAt: Date;
+};
+
 export class PostViewModel {
   id: string;
   title: string;
@@ -43,7 +54,7 @@ export class PostViewModel {
     return dto;
   }
 
-  static mapToViewModels(posts: RawPostInterface[]) {
+  static mapToViewModels(posts: PostType[]) {
     return posts.map((u) => this.mapToView(u));
   }
 }

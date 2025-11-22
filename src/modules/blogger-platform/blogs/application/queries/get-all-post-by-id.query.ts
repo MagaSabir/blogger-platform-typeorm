@@ -18,9 +18,7 @@ export class GetAllPostByIdQueryHandler
 {
   constructor(private blogsQueryRepository: BlogsQueryRepository) {}
 
-  async execute(
-    query: GetAllPostByIdQuery,
-  ): Promise<BasePaginatedResponse<PostViewModel>> {
+  async execute(query: GetAllPostByIdQuery) {
     return this.blogsQueryRepository.getAllPostsById(
       query.id,
       query.queryParams,
