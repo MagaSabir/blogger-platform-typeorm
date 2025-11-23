@@ -9,9 +9,9 @@ import { CommentModelType } from '../../types/comment-model.type';
 
 export class CommentSetLikeCommand {
   constructor(
-    public id: string,
+    public id: number,
     public status: LikeStatus,
-    public userId: string,
+    public userId: number,
   ) {}
 }
 
@@ -25,16 +25,14 @@ export class CommentSetLikeUseCase
   ) {}
 
   async execute(command: CommentSetLikeCommand): Promise<void> {
-    const comment: CommentModelType | null =
-      await this.commentsRepository.findComment(command.id);
+    const comment = await this.commentsRepository.findComment(command.id);
 
     if (!comment) throw new NotFoundException();
 
-    const existing: CommentLikeType | null =
-      await this.commentLikesRepository.finUserLikeById(
-        command.id,
-        command.userId,
-      );
+    const existing = await this.commentLikesRepository.finUserLikeById(
+      command.id,
+      command.userId,
+    );
 
     if (existing) {
       if (existing.status !== command.status) {

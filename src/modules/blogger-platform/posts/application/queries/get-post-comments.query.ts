@@ -7,8 +7,8 @@ import { NotFoundException } from '@nestjs/common';
 
 export class GetPostCommentsQuery {
   constructor(
-    public userId: string,
-    public id: string,
+    public userId: number,
+    public id: number,
     public queryParams: CommentQueryParams,
   ) {}
 }
@@ -21,13 +21,13 @@ export class GetPostCommentsQueryHandler
 
   async execute(
     query: GetPostCommentsQuery,
-  ): Promise<BasePaginatedResponse<CommentViewModel>> {
-    const comments: BasePaginatedResponse<CommentViewModel> =
-      await this.commentsQueryRepository.getComments(
-        query.queryParams,
-        query.id,
-        query.userId,
-      );
+  ): Promise<BasePaginatedResponse<CommentViewModel> | null> {
+    const comments = await this.commentsQueryRepository.getComments(
+      query.queryParams,
+      query.id,
+      query.userId,
+    );
+    if (!comments) throw new NotFoundException();
     return comments;
   }
 }

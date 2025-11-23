@@ -58,8 +58,8 @@ export class PostsController {
   @UseGuards(JwtOptionalAuthGuard)
   async getPostComments(
     @Query() query: CommentQueryParams,
-    @CurrentUserId() userId: string,
-    @Param('id') id: string,
+    @CurrentUserId() userId: number,
+    @Param('id', ParseIntPipe) id: number,
   ): Promise<CommentViewModel> {
     return this.queryBus.execute(new GetPostCommentsQuery(userId, id, query));
   }
@@ -70,7 +70,7 @@ export class PostsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: PostCommentInputDto,
     @CurrentUserId() userId: number,
-  ) {
+  ): Promise<BasePaginatedResponse<CommentViewModel>> {
     const commentId: number = await this.commandBus.execute(
       new CreateCommentCommand(id, dto, userId),
     );

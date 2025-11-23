@@ -1,7 +1,7 @@
 export type CommentModelType = {
-  id: string;
+  id: number;
   content: string;
-  postId: string;
-  userId: string;
+  postId?: string;
+  userId: number;
   createdAt: Date;
 };

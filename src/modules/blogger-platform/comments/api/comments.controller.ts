@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseIntPipe,
   Put,
   UseGuards,
 } from '@nestjs/common';
@@ -32,9 +33,9 @@ export class CommentsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtAuthGuard)
   async setCommentLike(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() dto: LikeStatusInputDto,
-    @CurrentUserId() userId: string,
+    @CurrentUserId() userId: number,
   ): Promise<void> {
     await this.commandBus.execute(
       new CommentSetLikeCommand(id, dto.likeStatus, userId),
@@ -45,9 +46,9 @@ export class CommentsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtAuthGuard)
   async updateComment(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() dto: CommentUpdateDto,
-    @CurrentUserId() userId: string,
+    @CurrentUserId() userId: number,
   ) {
     await this.commandBus.execute(
       new UpdateCommentCommand(id, dto.content, userId),
@@ -58,8 +59,8 @@ export class CommentsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtAuthGuard)
   async deleteComment(
-    @Param('id') id: string,
-    @CurrentUserId() userId: string,
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUserId() userId: number,
   ) {
     await this.commandBus.execute(new DeleteCommentCommand(id, userId));
   }

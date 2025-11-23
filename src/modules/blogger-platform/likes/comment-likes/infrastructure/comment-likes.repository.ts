@@ -8,8 +8,8 @@ export class CommentLikesRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   async finUserLikeById(
-    id: string,
-    userId: string,
+    id: number,
+    userId: number,
   ): Promise<CommentLikeType | null> {
     const result: CommentLikeType[] = await this.dataSource.query(
       `
@@ -20,7 +20,7 @@ export class CommentLikesRepository {
     return result[0] ?? null;
   }
 
-  async setCommentLike(id: string, userId: string, status: LikeStatus) {
+  async setCommentLike(id: number, userId: number, status: LikeStatus) {
     await this.dataSource.query(
       `
     UPDATE "CommentLikes" SET status = $3, "addedAt" = now() WHERE "commentId" = $1 AND "userId" = $2
@@ -29,7 +29,7 @@ export class CommentLikesRepository {
     );
   }
 
-  async setNewCommentLike(id: string, userId: string, status: LikeStatus) {
+  async setNewCommentLike(id: number, userId: number, status: LikeStatus) {
     await this.dataSource.query(
       `INSERT INTO "CommentLikes" ("commentId", "userId", status)
     VALUES ($1, $2, $3)`,

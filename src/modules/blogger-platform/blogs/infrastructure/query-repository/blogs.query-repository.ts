@@ -78,7 +78,7 @@ export class BlogsQueryRepository {
     blogId: number,
     queryParams: PostQueryParams,
     userId: number,
-  ) {
+  ): Promise<BasePaginatedResponse<PostViewModel>> {
     const posts: PostType[] = await this.postRepository
       .createQueryBuilder('p')
       .leftJoin('p.blog', 'b')
@@ -128,56 +128,19 @@ export class BlogsQueryRepository {
       .andWhere(`pl.status = 'Like'`)
       .orderBy('pl.addedAt', 'DESC')
       .getRawMany();
-    console.log(newestLikes);
 
-    const newestMap = {};
-
-    for (const like of newestLikes) {
-      if (!newestMap[like.postId]) newestMap[like.postId] = [];
-      if (newestMap[like.postId].length < 3) {
-        newestMap[like.postId].push({
-          addedAt: like.addedAt,
-          userId: like.userId,
-          login: like.login,
-        });
-      }
-    }
-
-    const likesMap = {};
-
-    for (const row of likesData) {
-      likesMap[row.postId] = {
-        likesCount: Number(row.likesCount),
-        dislikesCount: Number(row.dislikesCount),
-        myStatus: row.myStatus,
-      };
-    }
-
-    const items2 = posts.map((p) => ({
-      id: p.id,
-      title: p.title,
-      shortDescription: p.shortDescription,
-      content: p.content,
-      blogId: p.blogId,
-      blogName: p.blogName,
-      createdAt: p.createdAt,
-      extendedLikesInfo: {
-        likesCount: likesMap[p.id]?.likesCount || 0,
-        dislikesCount: likesMap[p.id]?.dislikesCount || 0,
-        myStatus: likesMap[p.id]?.myStatus || 'None',
-        newestLikes: newestMap[p.id] || [],
-      },
-    }));
-
-    console.log(items2);
     const totalCount = await this.postRepository.count({ where: { blogId } });
-    const items = PostViewModel.mapToViewModels(posts);
+    const items: PostViewModel[] = PostViewModel.toViewModel(
+      posts,
+      likesData,
+      newestLikes,
+    );
     return {
       pagesCount: Math.ceil(totalCount / queryParams.pageSize),
       page: queryParams.pageNumber,
       pageSize: queryParams.pageSize,
       totalCount,
-      items2,
+      items,
     };
   }
 }

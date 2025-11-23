@@ -38,6 +38,10 @@ export class Comment {
   @DeleteDateColumn()
   public deletedAt: Date | null;
 
+  updateComment(content: string) {
+    this.content = content;
+  }
+
   static createComment(userId: number, postId: number, content: string) {
     const comment = new Comment();
     comment.content = content;

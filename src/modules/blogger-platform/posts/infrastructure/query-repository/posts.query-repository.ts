@@ -1,16 +1,22 @@
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { PostQueryParams } from '../../api/input-dto/post-query-params';
-import { PostViewModel } from '../../application/view-dto/post-view-model';
+import {
+  PostType,
+  PostViewModel,
+} from '../../application/view-dto/post-view-model';
 import { BasePaginatedResponse } from '../../../../../core/base-paginated-response';
 import { Post } from '../../entity/post.entity';
 import { NotFoundException } from '@nestjs/common';
 import { RawPostInterface } from '../../../blogs/types/raw-post.interface';
+import { PostLike } from '../../../likes/posts-likes/entity/post-likes.entity';
+import { CommentViewModel } from '../../../comments/api/view-models/comment-view-model';
 
 export class PostsQueryRepository {
   constructor(
     @InjectDataSource() private dataSource: DataSource,
     @InjectRepository(Post) private postRepo: Repository<Post>,
+    @InjectRepository(PostLike) private postLikesRepo: Repository<PostLike>,
   ) {}
 
   async getAllPosts(
@@ -45,7 +51,7 @@ export class PostsQueryRepository {
   }
 
   async getPost(postId: number, userId: number) {
-    const builder = this.postRepo
+    const post: PostType | undefined = await this.postRepo
       .createQueryBuilder('p')
       .leftJoin('p.blog', 'b')
       .select([
@@ -57,11 +63,42 @@ export class PostsQueryRepository {
         'b.name AS "blogName"',
         'p.createdAt AS "createdAt"',
       ])
-      .where('p.id = :postId', { postId });
-    const post: RawPostInterface | undefined = await builder.getRawOne();
+      .where('p.id = :postId', { postId })
+      .getRawOne();
 
-    if (post) return PostViewModel.mapToView(post);
+    const likesCount = await this.postLikesRepo
+      .createQueryBuilder('pl')
+      .where('pl.postId = :id', { postId })
+      .andWhere(`pl.status = 'Like'`)
+      .getCount();
+
+    const dislikesCount = await this.postLikesRepo
+      .createQueryBuilder('pl')
+      .where('pl.postId = :id', { postId })
+      .andWhere(`pl.status = 'Dislike'`)
+      .getCount();
+
+    const status = await this.postLikesRepo
+      .createQueryBuilder('pl')
+      .select(['pl.status as "myStatus"'])
+      .where('l."postId" = :id', { postId })
+      .where('pl.userId = :userId', { userId })
+      .getRawOne();
+
+    console.log(likesCount);
+    console.log(dislikesCount);
+
+    const newestLikes = [];
+
+    return PostViewModel.mapToView(
+      post,
+      likesCount,
+      dislikesCount,
+      status,
+      newestLikes,
+    );
   }
+
   async getCreatedPost(postId: number): Promise<PostViewModel> {
     const builder: SelectQueryBuilder<Post> = this.postRepo
       .createQueryBuilder('p')
@@ -77,9 +114,9 @@ export class PostsQueryRepository {
       ])
       .where('p.id = :postId', { postId });
 
-    const post: RawPostInterface | undefined = await builder.getRawOne();
+    const post: PostType | undefined = await builder.getRawOne();
 
-    return PostViewModel.mapToView(post!);
+    return PostViewModel.mapToView(post);
   }
 
   async getBlogPosts(
@@ -106,7 +143,7 @@ export class PostsQueryRepository {
     const totalCount = await query.getCount();
     const posts = await query.getRawMany();
 
-    const items: PostViewModel[] = PostViewModel.mapToViewModels(posts);
+    const items = PostViewModel.mapToViewModels(posts);
     return {
       pagesCount: Math.ceil(totalCount / queryParams.pageSize),
       page: queryParams.pageNumber,
