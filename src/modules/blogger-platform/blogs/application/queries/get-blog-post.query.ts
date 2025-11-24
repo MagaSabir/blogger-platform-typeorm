@@ -16,8 +16,7 @@ export class GetBlogPostQueryHandler
   constructor(private postsQueryRepository: PostsQueryRepository) {}
 
   async execute(query: GetBlogPostQuery) {
-    const result: PostViewModel =
-      await this.postsQueryRepository.getCreatedPost(query.postId);
+    const result = await this.postsQueryRepository.getPost(query.postId);
     if (!result) throw new NotFoundException();
 
     return result;

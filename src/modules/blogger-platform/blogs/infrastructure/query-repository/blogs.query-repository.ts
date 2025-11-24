@@ -11,6 +11,7 @@ import {
   PostViewModel,
 } from '../../../posts/application/view-dto/post-view-model';
 import { PostLike } from '../../../likes/posts-likes/entity/post-likes.entity';
+import { BlogPostsViewModel } from '../../application/queries/view-dto/blog-posts.view-model';
 
 export class BlogsQueryRepository {
   constructor(
@@ -78,7 +79,7 @@ export class BlogsQueryRepository {
     blogId: number,
     queryParams: PostQueryParams,
     userId: number,
-  ): Promise<BasePaginatedResponse<PostViewModel>> {
+  ) {
     const posts: PostType[] = await this.postRepository
       .createQueryBuilder('p')
       .leftJoin('p.blog', 'b')
@@ -100,7 +101,7 @@ export class BlogsQueryRepository {
 
     const likesData = await this.postLikeRepository
       .createQueryBuilder('pl')
-      .select('pl.postId', 'postId')
+      .select('pl.postId', 'id')
       .addSelect(`COUNT(pl.id) FILTER (WHERE pl.status = 'Like')`, 'likesCount')
       .addSelect(
         `COUNT(pl.id) FILTER (WHERE pl.status = 'Dislike')`,
@@ -112,7 +113,7 @@ export class BlogsQueryRepository {
       )
       .where('pl.postId IN (:...ids)', { ids: postIds })
       .setParameter('userId', userId)
-      .groupBy('pl.postId')
+      .groupBy('pl.id')
       .getRawMany();
 
     const newestLikes = await this.postLikeRepository
@@ -130,7 +131,7 @@ export class BlogsQueryRepository {
       .getRawMany();
 
     const totalCount = await this.postRepository.count({ where: { blogId } });
-    const items: PostViewModel[] = PostViewModel.toViewModel(
+    const items: BlogPostsViewModel[] = BlogPostsViewModel.toViewModel(
       posts,
       likesData,
       newestLikes,

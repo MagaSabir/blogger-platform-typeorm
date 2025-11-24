@@ -1,10 +1,25 @@
-import { LikesMapUtil } from '../../../../../core/utils/likes-map.util';
+import {
+  LikesDataRow,
+  PostLikesMapUtil,
+} from '../../../../../core/utils/likes-map.util';
 
 export enum LikeStatus {
   Like = 'Like',
   Dislike = 'Dislike',
   None = 'None',
 }
+
+export type LikeDataType = {
+  likesCount: number;
+  dislikesCount: number;
+  myStatus: LikeStatus;
+};
+
+export type NewestLikeType = {
+  addedAt: Date;
+  userId: string;
+  login: string;
+};
 
 export type PostType = {
   id: number;
@@ -39,18 +54,16 @@ export class PostViewModel {
     dislikesCount: number;
     myStatus: LikeStatus;
     newestLikes: {
-      addedAt: string;
+      addedAt: Date;
       userId: string;
       login: string;
     }[];
   };
 
   static mapToView(
-    post: PostType | undefined,
-    likesCount: number,
-    dislikesCount: number,
-    myStatus: LikeStatus | undefined,
-    newestLikes: [],
+    post: PostType,
+    likesData: LikeDataType | undefined,
+    newestLikes: NewestLikeType[] | undefined,
   ) {
     const dto = new PostViewModel();
     dto.id = post.id.toString();
@@ -61,21 +74,26 @@ export class PostViewModel {
     dto.blogName = post.blogName;
     dto.createdAt = post.createdAt;
     dto.extendedLikesInfo = {
-      likesCount: likesCount,
-      dislikesCount: dislikesCount,
-      myStatus: myStatus || LikeStatus.None,
-      newestLikes: [],
+      likesCount: likesData?.likesCount || 0,
+      dislikesCount: likesData?.dislikesCount || 0,
+      myStatus: likesData?.myStatus || LikeStatus.None,
+      newestLikes:
+        newestLikes?.map((n) => ({
+          addedAt: n.addedAt,
+          userId: n.userId,
+          login: n.login,
+        })) ?? [],
     };
     return dto;
   }
 
-  static mapToViewModels(posts: PostType[]) {
-    return posts.map((u) => this.mapToView(u));
-  }
-
-  static toViewModel(posts: PostType[], likesMap: any[], newestMap: any[]) {
-    const likesData = LikesMapUtil.buildLikesMap(likesMap, 'postId');
-    const newestLikes = LikesMapUtil.buildNewestMap(newestMap);
+  static toViewModel(
+    posts: PostType[],
+    likesMap: LikesDataRow[],
+    newestMap: any[],
+  ) {
+    const likesData = PostLikesMapUtil.buildLikesMap(likesMap);
+    const newestLikes = PostLikesMapUtil.buildNewestMap(newestMap);
     const items = posts.map(
       (p: PostType): PostViewModel => ({
         id: p.id.toString(),

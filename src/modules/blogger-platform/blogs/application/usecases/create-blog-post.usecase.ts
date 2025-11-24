@@ -3,8 +3,6 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BlogsRepository } from '../../infrastructure/blogs.repository';
 import { NotFoundException } from '@nestjs/common';
 import { PostsRepository } from '../../../posts/infrastructure/posts.repository';
-import { BlogViewModel } from '../queries/view-dto/blog.view-model';
-import { PostViewModel } from '../../../posts/application/view-dto/post-view-model';
 import { Post } from '../../../posts/entity/post.entity';
 
 export class CreateBlogPostCommand {

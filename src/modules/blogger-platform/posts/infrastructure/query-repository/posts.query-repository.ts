@@ -1,16 +1,15 @@
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { PostQueryParams } from '../../api/input-dto/post-query-params';
 import {
+  LikeDataType,
+  NewestLikeType,
   PostType,
   PostViewModel,
 } from '../../application/view-dto/post-view-model';
-import { BasePaginatedResponse } from '../../../../../core/base-paginated-response';
 import { Post } from '../../entity/post.entity';
-import { NotFoundException } from '@nestjs/common';
-import { RawPostInterface } from '../../../blogs/types/raw-post.interface';
 import { PostLike } from '../../../likes/posts-likes/entity/post-likes.entity';
-import { CommentViewModel } from '../../../comments/api/view-models/comment-view-model';
+import { LikesDataRow } from '../../../../../core/utils/likes-map.util';
 
 export class PostsQueryRepository {
   constructor(
@@ -19,28 +18,62 @@ export class PostsQueryRepository {
     @InjectRepository(PostLike) private postLikesRepo: Repository<PostLike>,
   ) {}
 
-  async getAllPosts(
-    queryParams: PostQueryParams,
-    userId: number,
-  ): Promise<BasePaginatedResponse<PostViewModel>> {
-    const posts = await this.postRepo
-      .createQueryBuilder('p')
-      .leftJoin('p.blog', 'b')
-      .select([
-        'p.id AS id',
-        'p.title AS title',
-        'p."shortDescription" AS "shortDescription"',
-        'p.content AS content',
-        'p."blogId" AS "blogId"',
-        'b.name AS "blogName"',
-        'p.createdAt AS "createdAt"',
-      ])
-      .orderBy({ [`"${queryParams.sortBy}"`]: queryParams.sortDirection })
-      .offset(queryParams.calculateSkip())
-      .limit(queryParams.pageSize)
+  async getAllPosts(queryParams: PostQueryParams, userId: number) {
+    const [posts, totalCount] = await Promise.all([
+      this.postRepo
+        .createQueryBuilder('p')
+        .leftJoin('p.blog', 'b')
+        .select([
+          'p.id AS id',
+          'p.title AS title',
+          'p."shortDescription" AS "shortDescription"',
+          'p.content AS content',
+          'p."blogId" AS "blogId"',
+          'b.name AS "blogName"',
+          'p.createdAt AS "createdAt"',
+        ])
+        .orderBy({ [`"${queryParams.sortBy}"`]: queryParams.sortDirection })
+        .offset(queryParams.calculateSkip())
+        .limit(queryParams.pageSize)
+        .getRawMany(),
+
+      this.postRepo.count(),
+    ]);
+    if (posts.length === 0) return null;
+    const postIds = posts.map((p: PostType) => p.id);
+
+    const likeData: LikesDataRow[] | undefined = await this.postLikesRepo
+      .createQueryBuilder('pl')
+      .select('pl.postId', 'id')
+      .addSelect(`COUNT(pl.id) FILTER (WHERE pl.status = 'Like')`, 'likesCount')
+      .addSelect(
+        `COUNT(pl.id) FILTER (WHERE pl.status = 'Dislike')`,
+        'dislikesCount',
+      )
+      .addSelect(
+        `COALESCE(MAX(CASE WHEN pl.userId = :userId THEN pl.status ELSE NULL END), 'None')`,
+        'myStatus',
+      )
+      .where('pl.postId IN (:...ids)', { ids: postIds })
+      .setParameter('userId', userId)
+      .groupBy('pl.postId')
       .getRawMany();
-    const items = PostViewModel.mapToViewModels(posts);
-    const totalCount = await this.postRepo.count();
+
+    const newestLikes = await this.postLikesRepo
+      .createQueryBuilder('pl')
+      .select([
+        `pl.postId as "postId"`,
+        `pl.addedAt as "addedAt"`,
+        `pl.userId as "userId"`,
+        'u.login as login',
+      ])
+      .leftJoin('Users', 'u', 'u.id = pl.userId')
+      .where('pl.postId IN (:...ids)', { ids: postIds })
+      .andWhere(`pl.status = 'Like'`)
+      .orderBy('pl.addedAt', 'DESC')
+      .getRawMany();
+
+    const items = PostViewModel.toViewModel(posts, likeData, newestLikes);
     return {
       pagesCount: Math.ceil(totalCount / queryParams.pageSize),
       page: queryParams.pageNumber,
@@ -50,7 +83,10 @@ export class PostsQueryRepository {
     };
   }
 
-  async getPost(postId: number, userId: number) {
+  async getPost(
+    postId: number,
+    userId?: number,
+  ): Promise<PostViewModel | null> {
     const post: PostType | undefined = await this.postRepo
       .createQueryBuilder('p')
       .leftJoin('p.blog', 'b')
@@ -66,63 +102,76 @@ export class PostsQueryRepository {
       .where('p.id = :postId', { postId })
       .getRawOne();
 
-    const likesCount = await this.postLikesRepo
+    if (!post) return null;
+
+    // const likesCount = await this.postLikesRepo
+    //   .createQueryBuilder('pl')
+    //   .where('pl.postId = :postId', { postId })
+    //   .andWhere(`pl.status = 'Like'`)
+    //   .getCount();
+    //
+    // const dislikesCount = await this.postLikesRepo
+    //   .createQueryBuilder('pl')
+    //   .where('pl.postId = :postId', { postId })
+    //   .andWhere(`pl.status = 'Dislike'`)
+    //   .getCount();
+    //
+    // const status = await this.postLikesRepo
+    //   .createQueryBuilder('pl')
+    //   .select(['pl.status as "myStatus"'])
+    //   .where('pl.postId = :postId', { postId })
+    //   .andWhere('pl.userId = :userId', { userId })
+    //   .getRawOne();
+    //
+    const newestLikes: NewestLikeType[] | undefined = await this.postLikesRepo
       .createQueryBuilder('pl')
-      .where('pl.postId = :id', { postId })
+      .select([
+        `pl.addedAt as "addedAt"`,
+        `pl.userId as "userId"`,
+        'u.login as login',
+      ])
+      .leftJoin('Users', 'u', 'u.id = pl.userId')
+      .where('pl.postId = :postId', { postId })
       .andWhere(`pl.status = 'Like'`)
-      .getCount();
+      .orderBy('pl.addedAt', 'DESC')
+      .limit(3)
+      .getRawMany();
 
-    const dislikesCount = await this.postLikesRepo
+    const likesData: LikeDataType | undefined = await this.postLikesRepo
       .createQueryBuilder('pl')
-      .where('pl.postId = :id', { postId })
-      .andWhere(`pl.status = 'Dislike'`)
-      .getCount();
-
-    const status = await this.postLikesRepo
-      .createQueryBuilder('pl')
-      .select(['pl.status as "myStatus"'])
-      .where('l."postId" = :id', { postId })
-      .where('pl.userId = :userId', { userId })
+      .select([
+        `COUNT(pl.id) FILTER (where pl.status = 'Like')::int as "likesCount"`,
+        `COUNT(pl.id) FILTER (where pl.status = 'Dislike')::int as "dislikesCount"`,
+        `COALESCE(MAX(CASE WHEN pl.userId = :userId THEN pl.status END), 'None') as "myStatus"`,
+      ])
+      .where('pl.postId = :postId', { postId })
+      .setParameter('userId', userId ?? null)
       .getRawOne();
 
-    console.log(likesCount);
-    console.log(dislikesCount);
-
-    const newestLikes = [];
-
-    return PostViewModel.mapToView(
-      post,
-      likesCount,
-      dislikesCount,
-      status,
-      newestLikes,
-    );
+    return PostViewModel.mapToView(post, likesData, newestLikes);
   }
 
-  async getCreatedPost(postId: number): Promise<PostViewModel> {
-    const builder: SelectQueryBuilder<Post> = this.postRepo
-      .createQueryBuilder('p')
-      .leftJoin('p.blog', 'b')
-      .select([
-        'p.id AS id',
-        'p.title AS title',
-        'p."shortDescription" AS "shortDescription"',
-        'p.content AS content',
-        'p."blogId" AS "blogId"',
-        'b.name AS "blogName"',
-        'p.createdAt AS "createdAt"',
-      ])
-      .where('p.id = :postId', { postId });
+  // async getCreatedPost(postId: number): Promise<PostViewModel> {
+  //   const builder: SelectQueryBuilder<Post> = this.postRepo
+  //     .createQueryBuilder('p')
+  //     .leftJoin('p.blog', 'b')
+  //     .select([
+  //       'p.id AS id',
+  //       'p.title AS title',
+  //       'p."shortDescription" AS "shortDescription"',
+  //       'p.content AS content',
+  //       'p."blogId" AS "blogId"',
+  //       'b.name AS "blogName"',
+  //       'p.createdAt AS "createdAt"',
+  //     ])
+  //     .where('p.id = :postId', { postId });
+  //
+  //   const post: PostType | undefined = await builder.getRawOne();
+  //
+  //   return PostViewModel.mapToView(post);
+  // }
 
-    const post: PostType | undefined = await builder.getRawOne();
-
-    return PostViewModel.mapToView(post);
-  }
-
-  async getBlogPosts(
-    queryParams: PostQueryParams,
-    blogId: number,
-  ): Promise<BasePaginatedResponse<PostViewModel>> {
+  async getBlogPosts(queryParams: PostQueryParams, blogId: number) {
     const query = this.postRepo
       .createQueryBuilder('p')
       .leftJoin('p.blog', 'b')
@@ -143,13 +192,12 @@ export class PostsQueryRepository {
     const totalCount = await query.getCount();
     const posts = await query.getRawMany();
 
-    const items = PostViewModel.mapToViewModels(posts);
     return {
       pagesCount: Math.ceil(totalCount / queryParams.pageSize),
       page: queryParams.pageNumber,
       pageSize: queryParams.pageSize,
       totalCount,
-      items,
+      posts,
     };
   }
 }

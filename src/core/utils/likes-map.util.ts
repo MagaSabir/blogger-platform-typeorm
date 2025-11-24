@@ -1,14 +1,15 @@
-export class LikesMapUtil {
-  static buildLikesMap<T extends Record<string, any>>(
-    likesData: T[],
-    entityKey: keyof T,
-  ) {
-    const likesMap: Record<string | number, any> = {};
+import {
+  LikeDataType,
+  LikeStatus,
+  NewestLikeType,
+} from '../../modules/blogger-platform/posts/application/view-dto/post-view-model';
+
+export class PostLikesMapUtil {
+  static buildLikesMap(likesData: LikesDataRow[]) {
+    const likesMap: Record<number, LikeDataType> = {};
 
     for (const row of likesData) {
-      const id = row[entityKey];
-
-      likesMap[id] = {
+      likesMap[row.id] = {
         likesCount: Number(row.likesCount),
         dislikesCount: Number(row.dislikesCount),
         myStatus: row.myStatus,
@@ -19,7 +20,7 @@ export class LikesMapUtil {
   }
 
   static buildNewestMap(newestLikes: NewestLike[]) {
-    const newestMap: Record<number, any[]> = {};
+    const newestMap: Record<number, NewestLikeType[]> = {};
 
     for (const like of newestLikes) {
       if (!newestMap[like.postId]) {
@@ -29,7 +30,7 @@ export class LikesMapUtil {
       if (newestMap[like.postId].length < 3) {
         newestMap[like.postId].push({
           addedAt: like.addedAt,
-          userId: like.userId.toString(), // корректное приведение
+          userId: like.userId.toString(),
           login: like.login,
         });
       }
@@ -41,7 +42,14 @@ export class LikesMapUtil {
 
 type NewestLike = {
   postId: number;
-  addedAt: string;
+  addedAt: Date;
   userId: string;
   login: string;
+};
+
+export type LikesDataRow = {
+  id: number;
+  likesCount: string | number;
+  dislikesCount: string | number;
+  myStatus: LikeStatus;
 };

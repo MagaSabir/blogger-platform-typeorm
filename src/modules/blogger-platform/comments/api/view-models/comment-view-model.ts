@@ -1,5 +1,5 @@
 import { LikeStatus } from '../../../posts/application/view-dto/post-view-model';
-import { LikesMapUtil } from '../../../../../core/utils/likes-map.util';
+import { PostLikesMapUtil } from '../../../../../core/utils/likes-map.util';
 
 export interface DbCommentModel {
   id: number;
@@ -45,7 +45,7 @@ export class CommentViewModel {
   }
 
   static toViewModelComments(comments: DbCommentModel[], likesMap: any[]) {
-    const likes = LikesMapUtil.buildLikesMap(likesMap, 'commentId');
+    const likes = PostLikesMapUtil.buildLikesMap(likesMap);
     const items = comments.map((p: DbCommentModel) => ({
       id: p.id.toString(),
       content: p.content,

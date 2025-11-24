@@ -93,15 +93,13 @@ export class CommentsQueryRepository {
 
       this.commentRepo.count({ where: { postId } }),
     ]);
-    if (comments.length === 0) {
-      console.log('empty');
-      return null;
-    }
-    const commentIds = comments.map((c) => c.id);
+    if (comments.length === 0) return null;
+
+    const commentIds = comments.map((c: DbCommentModel) => c.id);
 
     const likeData = await this.commentLikestRepo
       .createQueryBuilder('cl')
-      .select('cl.commentId', 'commentId')
+      .select('cl.commentId', 'id')
       .addSelect(`COUNT(cl.id) FILTER (WHERE cl.status = 'Like')`, 'likesCount')
       .addSelect(
         `COUNT(cl.id) FILTER (WHERE cl.status = 'Dislike')`,
@@ -120,8 +118,6 @@ export class CommentsQueryRepository {
       comments,
       likeData,
     );
-
-    // const totalCount = await this.commentRepo.count({ where: { postId } });
 
     return {
       pagesCount: Math.ceil(totalCount / queryParams.pageSize),
