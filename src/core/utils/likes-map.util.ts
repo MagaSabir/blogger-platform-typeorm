@@ -40,7 +40,7 @@ export class PostLikesMapUtil {
   }
 }
 
-type NewestLike = {
+export type NewestLike = {
   postId: number;
   addedAt: Date;
   userId: string;

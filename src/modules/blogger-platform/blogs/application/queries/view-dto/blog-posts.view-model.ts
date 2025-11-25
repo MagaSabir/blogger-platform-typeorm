@@ -4,6 +4,7 @@ import {
 } from '../../../../posts/application/view-dto/post-view-model';
 import {
   LikesDataRow,
+  NewestLike,
   PostLikesMapUtil,
 } from '../../../../../../core/utils/likes-map.util';
 
@@ -29,7 +30,7 @@ export class BlogPostsViewModel {
   static toViewModel(
     posts: PostType[],
     likesMap: LikesDataRow[],
-    newestMap: any[],
+    newestMap: NewestLike[],
   ) {
     const likesData = PostLikesMapUtil.buildLikesMap(likesMap);
     const newestLikes = PostLikesMapUtil.buildNewestMap(newestMap);

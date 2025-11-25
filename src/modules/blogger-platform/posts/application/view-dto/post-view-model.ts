@@ -80,7 +80,7 @@ export class PostViewModel {
       newestLikes:
         newestLikes?.map((n) => ({
           addedAt: n.addedAt,
-          userId: n.userId,
+          userId: n.userId.toString(),
           login: n.login,
         })) ?? [],
     };

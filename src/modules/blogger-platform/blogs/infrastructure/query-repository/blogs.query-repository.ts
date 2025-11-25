@@ -97,6 +97,9 @@ export class BlogsQueryRepository {
       .offset(queryParams.calculateSkip())
       .limit(queryParams.pageSize)
       .getRawMany();
+
+    if (posts.length === 0) return null;
+
     const postIds = posts.map((p) => p.id);
 
     const likesData = await this.postLikeRepository
@@ -112,8 +115,8 @@ export class BlogsQueryRepository {
         'myStatus',
       )
       .where('pl.postId IN (:...ids)', { ids: postIds })
-      .setParameter('userId', userId)
-      .groupBy('pl.id')
+      .setParameter('userId', userId ?? null)
+      .groupBy('pl.postId')
       .getRawMany();
 
     const newestLikes = await this.postLikeRepository

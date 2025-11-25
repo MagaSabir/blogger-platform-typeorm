@@ -47,7 +47,7 @@ import { LoginSwaggerDecorator } from './swagger/login.swagger-decorator';
 import { RegisterUserSwaggerDecorator } from './swagger/registrer-user.swagger.decorator';
 
 @Controller('auth')
-@UseGuards(ThrottlerGuard)
+// @UseGuards(ThrottlerGuard)
 export class AuthController {
   constructor(
     private commandBus: CommandBus,

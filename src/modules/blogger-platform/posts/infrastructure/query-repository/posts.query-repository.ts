@@ -151,26 +151,6 @@ export class PostsQueryRepository {
     return PostViewModel.mapToView(post, likesData, newestLikes);
   }
 
-  // async getCreatedPost(postId: number): Promise<PostViewModel> {
-  //   const builder: SelectQueryBuilder<Post> = this.postRepo
-  //     .createQueryBuilder('p')
-  //     .leftJoin('p.blog', 'b')
-  //     .select([
-  //       'p.id AS id',
-  //       'p.title AS title',
-  //       'p."shortDescription" AS "shortDescription"',
-  //       'p.content AS content',
-  //       'p."blogId" AS "blogId"',
-  //       'b.name AS "blogName"',
-  //       'p.createdAt AS "createdAt"',
-  //     ])
-  //     .where('p.id = :postId', { postId });
-  //
-  //   const post: PostType | undefined = await builder.getRawOne();
-  //
-  //   return PostViewModel.mapToView(post);
-  // }
-
   async getBlogPosts(queryParams: PostQueryParams, blogId: number) {
     const query = this.postRepo
       .createQueryBuilder('p')
