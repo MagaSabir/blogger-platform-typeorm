@@ -14,6 +14,7 @@ import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './modules/user-accounts/users.module';
 import { BloggerPlatformModule } from './modules/blogger-platform/blogger-platform.module';
 import { throttlerSetup } from './setup/throtller.setup';
+import { QuizModule } from './modules/quiz/quiz.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { throttlerSetup } from './setup/throtller.setup';
     NotificationModule,
     UsersModule,
     BloggerPlatformModule,
+    QuizModule,
   ],
   controllers: [AppController],
   providers: [
