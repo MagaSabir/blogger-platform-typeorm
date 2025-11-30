@@ -29,7 +29,7 @@ import { QuizModule } from './modules/quiz/quiz.module';
         password: coreConfig.password,
         database: coreConfig.database,
         autoLoadEntities: true,
-        synchronize: true,
+        synchronize: false,
         logging: true,
       }),
       inject: [CoreConfig],
