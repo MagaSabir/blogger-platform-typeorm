@@ -9,7 +9,6 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Blog } from '../../blogs/entity/blog.entity';
-import { CreatePostByBlogId } from '../../blogs/dto/create-post-by-blog-id.dto';
 import { UpdatePostDto } from '../dto/update-post.dto';
 import { PostLike } from '../../likes/posts-likes/entity/post-likes.entity';
 

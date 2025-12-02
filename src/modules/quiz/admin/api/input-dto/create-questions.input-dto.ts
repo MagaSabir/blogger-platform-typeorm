@@ -9,6 +9,6 @@ export class CreateQuestionsInputDto {
   body: string;
 
   @IsArray()
-  // @Transform(({ value }) => value.map((v) => String(v)))
+  @Transform(({ value }) => value.map((v) => String(v)))
   correctAnswers: string[];
 }

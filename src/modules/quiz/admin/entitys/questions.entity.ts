@@ -1,4 +1,5 @@
 import {
+  BaseEntity,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
@@ -8,17 +9,17 @@ import {
 } from 'typeorm';
 
 @Entity('Question')
-export class Question {
+export class Question extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   public id: string;
 
   @Column({ type: 'varchar', length: 500 })
   public body: string;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'text', array: true, default: [] })
   public correctAnswers: string[];
 
-  @Column()
+  @Column({ default: false })
   public published: boolean;
 
   @CreateDateColumn({ nullable: true })

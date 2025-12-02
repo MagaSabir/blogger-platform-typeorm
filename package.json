@@ -21,7 +21,7 @@
     "migration:generate": "cross-env NODE_ENV=development typeorm-ts-node-commonjs migration:generate -d ./src/db/data-source.ts",
     "migration:create": "typeorm-ts-node-commonjs migration:create",
     "migration:run": "typeorm-ts-node-commonjs migration:run -d src/db/data-source.ts",
-    "migration:revert": "typeorm-ts-node-commonjs  migration:revert -d src/db/data-source.ts"
+    "migration:revert": "cross-env NODE_ENV=development typeorm-ts-node-commonjs  migration:revert -d src/db/data-source.ts"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^2.0.2",
