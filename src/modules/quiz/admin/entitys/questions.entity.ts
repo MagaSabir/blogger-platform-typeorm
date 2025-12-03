@@ -1,12 +1,6 @@
-import {
-  BaseEntity,
-  Column,
-  CreateDateColumn,
-  DeleteDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { GameQuestion } from './game-question.entity';
+import { BaseEntity } from '../../../../core/entities/base.entity';
 
 @Entity('Question')
 export class Question extends BaseEntity {
@@ -22,12 +16,6 @@ export class Question extends BaseEntity {
   @Column({ default: false })
   public published: boolean;
 
-  @CreateDateColumn({ nullable: true })
-  createdAt: Date | null;
-
-  @UpdateDateColumn({ nullable: true })
-  updatedAt: Date | null;
-
-  @DeleteDateColumn({ nullable: true })
-  deletedAt: Date | null;
+  @OneToMany(() => GameQuestion, (gameQuestion) => gameQuestion.question)
+  public gameQuestion: GameQuestion[];
 }

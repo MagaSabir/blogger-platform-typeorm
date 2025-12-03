@@ -1,35 +1,46 @@
 import {
   Column,
+  CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Player } from './player.entity';
 import { GameQuestion } from './game-question.entity';
+import { BaseEntity } from '../../../../core/entities/base.entity';
 
-@Entity('Game')
-export class Game {
-  @PrimaryGeneratedColumn()
+export enum GameStatus {
+  PENDING = 'pending',
+  ACTIVE = 'active',
+  FINISHED = 'finished',
+}
+
+@Entity('Games')
+export class Game extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
   public id: string;
 
-  @Column()
-  public status;
+  @Column({ type: 'enum', enum: GameStatus, default: GameStatus.PENDING })
+  public status: GameStatus;
 
   @OneToOne(() => Player)
-  @JoinColumn({ name: 'player_1_id' })
-  player_1: Player;
+  @JoinColumn({ name: 'firstPlayerId' })
+  firstPlayer: Player;
 
   @Column()
-  public player_1_id: string;
+  public firstPlayerId: string;
 
   @OneToOne(() => Player)
-  @JoinColumn({ name: 'player_2_id' })
-  player_2: Player;
+  @JoinColumn({ name: 'secondPlayerId' })
+  secondPlayer: Player;
 
   @Column()
-  public player_2_id: string;
+  public secondPlayerId: string;
 
+  @OneToMany(() => GameQuestion, (gameQuestion) => gameQuestion.game)
   public questions: GameQuestion[];
 }

@@ -1,30 +1,36 @@
 import {
   Column,
+  CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
+import { Player } from './player.entity';
 import { Question } from './questions.entity';
-import { Game } from './game.entity';
 import { BaseEntity } from '../../../../core/entities/base.entity';
 
-@Entity('GameQuestion')
-export class GameQuestion extends BaseEntity {
+@Entity('Answers')
+export class Answer extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   public id: string;
 
-  @ManyToOne(() => Question, (question) => question.gameQuestion)
+  @ManyToOne(() => Question)
   @JoinColumn({ name: 'questionId' })
   question: Question;
 
   @Column()
   public questionId: string;
 
-  @ManyToOne(() => Game, (game) => game.questions)
-  @JoinColumn({ name: 'gameId' })
-  game: Game;
+  @Column()
+  public status;
+
+  @ManyToOne(() => Player, (player) => player.answers)
+  @JoinColumn({ name: 'playerId' })
+  player: Player;
 
   @Column()
-  public gameId: string;
+  public playerId: string;
 }
