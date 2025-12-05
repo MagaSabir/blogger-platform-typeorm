@@ -24,8 +24,15 @@ export class Player extends BaseEntity {
   @Column()
   public userId: string;
 
+  @Column()
+  public score: number;
+
   @OneToOne(() => Game, (game) => game.firstPlayer)
+  @JoinColumn({ name: 'gameId' })
   game: Game;
+
+  @Column()
+  public gameId: string;
 
   @OneToMany(() => Answer, (answers) => answers.player)
   answers: Answer[];

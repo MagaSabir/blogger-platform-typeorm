@@ -17,5 +17,5 @@ export class Question extends BaseEntity {
   public published: boolean;
 
   @OneToMany(() => GameQuestion, (gameQuestion) => gameQuestion.question)
-  public gameQuestion: GameQuestion[];
+  public gameQuestions: GameQuestion[];
 }

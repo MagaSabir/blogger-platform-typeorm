@@ -19,6 +19,7 @@ export class Answer extends BaseEntity {
 
   @ManyToOne(() => Question)
   @JoinColumn({ name: 'questionId' })
+  л;
   question: Question;
 
   @Column()

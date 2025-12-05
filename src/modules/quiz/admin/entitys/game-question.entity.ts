@@ -14,7 +14,7 @@ export class GameQuestion extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   public id: string;
 
-  @ManyToOne(() => Question, (question) => question.gameQuestion)
+  @ManyToOne(() => Question, (question) => question.gameQuestions)
   @JoinColumn({ name: 'questionId' })
   question: Question;
 
