@@ -1,8 +1,14 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { GameQuestion } from './game-question.entity';
 
 @Entity('Question')
-export class Question {
+export class Question extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   public id: string;
 
