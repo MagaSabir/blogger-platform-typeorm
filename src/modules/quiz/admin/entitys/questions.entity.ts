@@ -1,33 +1,20 @@
-import {
-  BaseEntity,
-  Column,
-  CreateDateColumn,
-  DeleteDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { GameQuestion } from './game-question.entity';
 
 @Entity('Question')
-export class Question extends BaseEntity {
+export class Question {
   @PrimaryGeneratedColumn('uuid')
   public id: string;
 
-  @Column({ type: 'varchar', length: 500 })
+  @Column()
   public body: string;
 
-  @Column({ type: 'text', array: true, default: [] })
+  @Column({ type: 'text', array: true })
   public correctAnswers: string[];
 
   @Column({ default: false })
   public published: boolean;
 
-  @CreateDateColumn({ nullable: true })
-  createdAt: Date | null;
-
-  @UpdateDateColumn({ nullable: true })
-  updatedAt: Date | null;
-
-  @DeleteDateColumn({ nullable: true })
-  deletedAt: Date | null;
+  @OneToMany(() => GameQuestion, (gq) => gq.question)
+  gameQuestions: GameQuestion[];
 }

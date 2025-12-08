@@ -10,7 +10,7 @@ import { Game } from './game.entity';
 
 @Entity('GameQuestion')
 export class GameQuestion {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   public id: string;
 
   @ManyToOne(() => Question)
@@ -20,10 +20,13 @@ export class GameQuestion {
   @Column()
   public questionId: string;
 
-  @ManyToOne(() => Game)
+  @ManyToOne(() => Game, (game) => game.questions)
   @JoinColumn({ name: 'gameId' })
   game: Game;
 
   @Column()
   public gameId: string;
+
+  @Column()
+  public order: number;
 }

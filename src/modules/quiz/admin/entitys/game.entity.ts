@@ -1,35 +1,51 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Player } from './player.entity';
 import { GameQuestion } from './game-question.entity';
 
+export enum GameStatus {
+  PENDING = 'Pending',
+  ACTIVE = 'Active',
+  FINISHED = 'Finished',
+}
 @Entity('Game')
 export class Game {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   public id: string;
 
-  @Column()
-  public status;
+  @Column({ type: 'enum', enum: GameStatus, default: GameStatus.PENDING })
+  public status: GameStatus;
 
-  @OneToOne(() => Player)
-  @JoinColumn({ name: 'player_1_id' })
-  player_1: Player;
-
-  @Column()
-  public player_1_id: string;
-
-  @OneToOne(() => Player)
-  @JoinColumn({ name: 'player_2_id' })
-  player_2: Player;
+  @ManyToOne(() => Player)
+  @JoinColumn({ name: 'firstPlayerId' })
+  firstPlayer: Player;
 
   @Column()
-  public player_2_id: string;
+  public firstPlayerId: string;
 
+  @ManyToOne(() => Player)
+  @JoinColumn({ name: 'secondPlayerId' })
+  secondPlayer: Player;
+
+  @Column()
+  public secondPlayerId: string;
+
+  @OneToMany(() => GameQuestion, (gq) => gq.game)
   public questions: GameQuestion[];
+
+  @CreateDateColumn()
+  pairCreatedDate: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  startGameDate: Date | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  finishGameDate: Date | null;
 }

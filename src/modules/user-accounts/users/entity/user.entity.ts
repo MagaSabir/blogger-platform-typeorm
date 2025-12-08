@@ -12,6 +12,7 @@ import { CreateUserDto } from '../dto/create-user.dto';
 import { RegisterUserDto } from '../dto/register-user.dto';
 import { Session } from '../../sessions/entity/session.entity';
 import { BadRequestException } from '@nestjs/common';
+import { Player } from '../../../quiz/admin/entitys/player.entity';
 
 @Entity('Users')
 @Unique(['login', 'email'])
@@ -45,6 +46,9 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Session, (session) => session.user)
   sessions: Session[];
+
+  @OneToMany(() => Player, (player) => player.user)
+  players: Player[];
 
   emailConfirm(code: string) {
     if (code !== this.confirmationCode) {
