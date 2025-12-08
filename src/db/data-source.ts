@@ -2,6 +2,7 @@ import { DataSource } from 'typeorm';
 import { config } from 'dotenv';
 import process from 'node:process';
 import * as path from 'node:path';
+import { Game } from '../modules/quiz/admin/entitys/game.entity';
 
 config({
   path: path.resolve(__dirname, '../env/.env.development.local'),
@@ -16,6 +17,8 @@ export default new DataSource({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   migrations: [path.resolve(__dirname, './migrations/*.ts')],
-  entities: ['src/**/*.entity{.ts,.js}'],
+  // entities: ['src/**/*.entity{.ts,.js}'],
+  entities: [Game],
+
   synchronize: false,
 });
