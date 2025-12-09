@@ -12,11 +12,11 @@ export class QuizAdminController {
 
   @Post('questions')
   async createQuestion(@Body() dto: CreateQuestionsInputDto) {
-    const q = new Question();
-    q.body = dto.body;
-    q.correctAnswers = dto.correctAnswers;
-    await q.save();
-    return await this.qRepo.find();
+    const question = new Question();
+    question.body = dto.body;
+    question.correctAnswers = dto.correctAnswers;
+    await question.save();
+    return question;
   }
 
   @Delete()

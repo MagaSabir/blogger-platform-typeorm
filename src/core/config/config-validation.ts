@@ -9,6 +9,7 @@ export class ConfigValidation {
           Object.values(error.constraints || {}).join(', '),
         )
         .join('; ');
+
       throw new Error('Validation Failed: ' + sortedMessages);
     }
   }

@@ -20,7 +20,7 @@ export class Player {
   user: User;
 
   @Column()
-  public userId: string;
+  public userId: number;
 
   @ManyToOne(() => Game)
   @JoinColumn({ name: 'gameId' })

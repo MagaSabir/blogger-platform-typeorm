@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { IsEnum, IsNumber } from 'class-validator';
+import { IsEnum, IsInt, IsNumber } from 'class-validator';
 import { ConfigValidation } from './config-validation';
 
 export enum Environments {
@@ -11,12 +11,9 @@ export enum Environments {
 }
 @Injectable()
 export class CoreConfig {
-  @IsNumber(
-    {},
-    {
-      message: 'Set Env variable Port',
-    },
-  )
+  @IsInt({
+    message: 'Set Env variable Port',
+  })
   port: number;
 
   db_port: number;
