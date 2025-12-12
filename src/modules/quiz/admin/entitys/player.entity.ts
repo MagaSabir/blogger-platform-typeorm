@@ -22,7 +22,7 @@ export class Player {
   @Column()
   public userId: number;
 
-  @ManyToOne(() => Game)
+  @ManyToOne(() => Game, (game) => game.players)
   @JoinColumn({ name: 'gameId' })
   game: Game;
 
@@ -31,6 +31,9 @@ export class Player {
 
   @Column({ default: 0 })
   public score: number;
+
+  @Column({ type: 'int' })
+  public position: number;
 
   @OneToMany(() => Answer, (answer) => answer.player)
   answers: Answer[];

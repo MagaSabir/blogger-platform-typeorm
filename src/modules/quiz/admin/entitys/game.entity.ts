@@ -23,19 +23,8 @@ export class Game {
   @Column({ type: 'enum', enum: GameStatus, default: GameStatus.PENDING })
   public status: GameStatus;
 
-  @ManyToOne(() => Player)
-  @JoinColumn({ name: 'firstPlayerId' })
-  firstPlayer: Player;
-
-  @Column()
-  public firstPlayerId: string;
-
-  @ManyToOne(() => Player)
-  @JoinColumn({ name: 'secondPlayerId' })
-  secondPlayer: Player;
-
-  @Column()
-  public secondPlayerId: string;
+  @OneToMany(() => Player, (player) => player.game)
+  players: Player[];
 
   @OneToMany(() => GameQuestion, (gq) => gq.game)
   public questions: GameQuestion[];
