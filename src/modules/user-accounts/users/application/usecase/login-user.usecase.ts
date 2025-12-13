@@ -7,7 +7,7 @@ import { Session } from '../../../sessions/entity/session.entity';
 
 export class LoginUserCommand {
   constructor(
-    public userId: number,
+    public userId: string,
     public ip: string,
     public userAgent: string,
   ) {}

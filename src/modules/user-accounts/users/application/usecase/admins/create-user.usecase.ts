@@ -18,7 +18,7 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
     private passwordService: PasswordService,
     private userConfig: UsersConfig,
   ) {}
-  async execute(command: CreateUserCommand): Promise<number> {
+  async execute(command: CreateUserCommand): Promise<string> {
     const { login, email, password } = command.dto;
     const existUser: User | null =
       await this.usersRepository.findUserByLoginOrEmail(login, email);

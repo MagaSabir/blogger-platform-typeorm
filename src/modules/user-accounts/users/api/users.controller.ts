@@ -6,7 +6,6 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  ParseIntPipe,
   Post,
   Query,
   UseGuards,
@@ -46,7 +45,7 @@ export class UsersController {
   @CreateUserSwaggerDecorator()
   @HttpCode(HttpStatus.CREATED)
   async createUser(@Body() dto: CreateUserInputDto): Promise<UserViewModel> {
-    const userId: number = await this.commandBus.execute(
+    const userId: string = await this.commandBus.execute(
       new CreateUserCommand(dto),
     );
     return this.queryBus.execute(new GetUserQuery(userId));
@@ -55,7 +54,7 @@ export class UsersController {
   @DeleteUserSwaggerDecorator()
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteById(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  async deleteById(@Param('id') id: string): Promise<void> {
     await this.commandBus.execute(new DeleteUserCommand(id));
   }
 

@@ -1,6 +1,5 @@
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, MoreThan, Not, Repository } from 'typeorm';
-import { SessionsType } from '../type/sessions-type';
 import { NotFoundException } from '@nestjs/common';
 import { Session } from '../entity/session.entity';
 import { SessionViewModel } from '../../security-devices/view-model/session.view-model';
@@ -15,22 +14,22 @@ export class SessionRepository {
     await this.sessionsRepo.save(session);
   }
 
-  async findSession(userId: number, deviceId: string): Promise<Session | null> {
+  async findSession(userId: string, deviceId: string): Promise<Session | null> {
     return await this.sessionsRepo.findOne({ where: { userId, deviceId } });
   }
 
-  async deleteSession(userId: number, deviceId: string) {
+  async deleteSession(userId: string, deviceId: string) {
     await this.sessionsRepo.softDelete({ userId, deviceId });
   }
 
-  async getDeviceSession(userId: number): Promise<SessionViewModel[]> {
+  async getDeviceSession(userId: string): Promise<SessionViewModel[]> {
     const sessions: Session[] = await this.sessionsRepo.find({
       where: { userId, expiresAt: MoreThan(new Date()) },
     });
     return SessionViewModel.mapToViewModel(sessions);
   }
 
-  async deleteOtherActiveSessions(userId: number, currentDeviceId: string) {
+  async deleteOtherActiveSessions(userId: string, currentDeviceId: string) {
     await this.sessionsRepo.softDelete({
       userId,
       deviceId: Not(currentDeviceId),

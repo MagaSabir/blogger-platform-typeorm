@@ -4,7 +4,7 @@ import { MeViewModel } from '../../api/view-dto/me-view-model';
 import { UserViewModel } from '../../api/view-dto/user-view-model';
 
 export class GetUserQuery {
-  constructor(public userId: number) {}
+  constructor(public userId: string) {}
 }
 
 @QueryHandler(GetUserQuery)

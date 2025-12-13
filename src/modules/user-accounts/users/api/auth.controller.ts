@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import { Throttle } from '@nestjs/throttler';
 import { LocalAuthGuard } from '../../guards/local/local.auth.guard';
 import { CurrentUserId } from '../../../../core/decorators/current-user-id';
 import { Request, Response } from 'express';
@@ -69,10 +69,11 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
   async login(
-    @CurrentUserId(ParseIntPipe) userId: number,
+    @CurrentUserId() userId: string,
     @Res() res: Response,
     @Req() req: Request,
   ) {
+    console.log(userId);
     const ip = req.ip || 'undefined';
     const userAgent: string = req.headers['user-agent'] || 'undefined';
     const {
@@ -251,7 +252,7 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @UseGuards(JwtAuthGuard)
   async me(
-    @CurrentUserId(ParseIntPipe) userId: number,
+    @CurrentUserId(ParseIntPipe) userId: string,
   ): Promise<UserViewModel> {
     return this.queryBus.execute(new GetMeQuery(userId));
   }

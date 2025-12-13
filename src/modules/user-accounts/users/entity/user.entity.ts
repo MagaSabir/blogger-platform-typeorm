@@ -12,13 +12,13 @@ import { CreateUserDto } from '../dto/create-user.dto';
 import { RegisterUserDto } from '../dto/register-user.dto';
 import { Session } from '../../sessions/entity/session.entity';
 import { BadRequestException } from '@nestjs/common';
-import { Player } from '../../../quiz/admin/entitys/player.entity';
+import { Player } from '../../../quiz/entitys/player.entity';
 
 @Entity('Users')
 @Unique(['login', 'email'])
 export class User extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  public id: number;
+  @PrimaryGeneratedColumn('uuid')
+  public id: string;
 
   @Column({ collation: 'C' })
   public login: string;

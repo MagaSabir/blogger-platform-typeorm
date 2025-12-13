@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Question } from './admin/entitys/questions.entity';
-import { QuizAdminController } from './admin/api/quiz-admin.controller';
-import { Player } from './admin/entitys/player.entity';
-import { Game } from './admin/entitys/game.entity';
-import { GameQuestion } from './admin/entitys/game-question.entity';
-import { Answer } from './admin/entitys/answer.entity';
+import { Question } from './entitys/questions.entity';
+import { QuizAdminController } from './api/admin/quiz-admin.controller';
+import { Player } from './entitys/player.entity';
+import { Game } from './entitys/game.entity';
+import { GameQuestion } from './entitys/game-question.entity';
+import { Answer } from './entitys/answer.entity';
 
 @Module({
   imports: [

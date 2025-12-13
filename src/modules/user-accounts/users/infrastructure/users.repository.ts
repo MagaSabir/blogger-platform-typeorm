@@ -16,7 +16,7 @@ export class UsersRepository {
     return this.userRepo.save(dto);
   }
 
-  async deleteUserById(id: number): Promise<void> {
+  async deleteUserById(id: string): Promise<void> {
     await this.sessionRepo.softDelete({ userId: id });
     await this.userRepo.softDelete(id);
   }
@@ -29,7 +29,7 @@ export class UsersRepository {
     });
   }
 
-  async findUserOrThrowNotFound(id: number): Promise<User> {
+  async findUserOrThrowNotFound(id: string): Promise<User> {
     const user: User | null = await this.userRepo.findOneBy({ id: id });
     if (!user) throw new NotFoundException();
     return user;

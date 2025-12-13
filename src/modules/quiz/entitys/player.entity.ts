@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Answer } from './answer.entity';
-import { User } from '../../../user-accounts/users/entity/user.entity';
+import { User } from '../../user-accounts/users/entity/user.entity';
 import { Game } from './game.entity';
 
 @Entity('Player')
@@ -20,7 +20,7 @@ export class Player {
   user: User;
 
   @Column()
-  public userId: number;
+  public userId: string;
 
   @ManyToOne(() => Game, (game) => game.players)
   @JoinColumn({ name: 'gameId' })

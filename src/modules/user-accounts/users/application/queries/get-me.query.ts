@@ -3,7 +3,7 @@ import { AuthQueryRepository } from '../../infrastructure/query-repository/auth.
 import { MeViewModel } from '../../api/view-dto/me-view-model';
 
 export class GetMeQuery {
-  constructor(public userId: number) {}
+  constructor(public userId: string) {}
 }
 
 @QueryHandler(GetMeQuery)

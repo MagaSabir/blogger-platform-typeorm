@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Post, Put } from '@nestjs/common';
 import { CreateQuestionsInputDto } from './input-dto/create-questions.input-dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Question } from '../entitys/questions.entity';
+import { Question } from '../../entitys/questions.entity';
 
 @Controller('sa/quiz')
 export class QuizAdminController {

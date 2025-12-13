@@ -3,7 +3,7 @@ import { CommandHandler } from '@nestjs/cqrs';
 import { User } from '../../../entity/user.entity';
 
 export class DeleteUserCommand {
-  constructor(public id: number) {}
+  constructor(public id: string) {}
 }
 
 @CommandHandler(DeleteUserCommand)

@@ -37,7 +37,7 @@ export class Session extends BaseEntity {
   user: User;
 
   @Column()
-  userId: number;
+  userId: string;
 
   updateSession(iat: Date, exp: Date) {
     this.lastActiveDate = iat;
