@@ -2,11 +2,11 @@ import { DataSource } from 'typeorm';
 import { config } from 'dotenv';
 import process from 'node:process';
 import * as path from 'node:path';
-
+const env = process.env.NODE_ENV || 'testing';
 config({
-  path: path.resolve(__dirname, '../env/.env.development.local'),
+  path: path.resolve(__dirname, `../env/.env.${env}.local`),
 });
-
+console.log(process.env.DB_PORT);
 export default new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST,

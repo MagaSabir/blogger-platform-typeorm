@@ -7,7 +7,7 @@
 //     process.env.ENV_FILE_PATH?.trim() || '',
 //     join(__dirname, `env`, `.env.${process.env.NODE_ENV}.local`),
 //     join(__dirname, `env`, `.env.${process.env.NODE_ENV}`),
-//     join(__dirname, `env`, '.env.testing'),
+//     join(__dirname, `env`, '..env.testing'),
 //     join(__dirname, `env`, '.env.production'),
 //   ],
 //   isGlobal: true,
@@ -21,7 +21,7 @@ export const configModule = ConfigModule.forRoot({
   envFilePath: [
     join(process.cwd(), 'src', 'env', `.env.${process.env.NODE_ENV}.local`),
     join(process.cwd(), 'src', 'env', `.env.${process.env.NODE_ENV}`),
-    join(process.cwd(), 'src', 'env', '.env.testing'),
+    join(process.cwd(), 'src', 'env', '..env.testing'),
     join(process.cwd(), 'src', 'env', '.env.production'),
   ],
 });

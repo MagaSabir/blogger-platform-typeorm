@@ -20,7 +20,9 @@
     "test:e2e": "cross-env NODE_ENV=testing jest --config ./test/jest-e2e.json",
     "migration:generate": "cross-env NODE_ENV=development typeorm-ts-node-commonjs migration:generate -d ./src/db/data-source.ts",
     "migration:create": "typeorm-ts-node-commonjs migration:create",
-    "migration:run": "typeorm-ts-node-commonjs migration:run -d src/db/data-source.ts",
+    "migration:run": "cross-env NODE_ENV=development typeorm-ts-node-commonjs migration:run -d src/db/data-source.ts",
+    "migration:run:test": "cross-env NODE_ENV=testing typeorm-ts-node-commonjs migration:run -d src/db/data-source.ts",
+
     "migration:revert": "cross-env NODE_ENV=development typeorm-ts-node-commonjs  migration:revert -d src/db/data-source.ts"
   },
   "dependencies": {
