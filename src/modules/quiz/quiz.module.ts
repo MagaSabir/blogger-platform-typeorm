@@ -10,6 +10,8 @@ import { QuestionRepository } from './infrastructure/question.repository';
 import { CreateQuestionUseCase } from './application/usecase/create-question.usecase';
 import { CqrsModule } from '@nestjs/cqrs';
 import { DeleteQuestionUseCase } from './application/usecase/delete-question.usecase';
+import { ChangeQuestionStatusUseCase } from './application/usecase/change-question-status.usecase';
+import { UpdateQuestionUseCase } from './application/usecase/update-question.usecase';
 
 @Module({
   imports: [
@@ -17,6 +19,12 @@ import { DeleteQuestionUseCase } from './application/usecase/delete-question.use
     CqrsModule,
   ],
   controllers: [QuizAdminController],
-  providers: [QuestionRepository, CreateQuestionUseCase, DeleteQuestionUseCase],
+  providers: [
+    QuestionRepository,
+    CreateQuestionUseCase,
+    DeleteQuestionUseCase,
+    ChangeQuestionStatusUseCase,
+    UpdateQuestionUseCase,
+  ],
 })
 export class QuizModule {}
