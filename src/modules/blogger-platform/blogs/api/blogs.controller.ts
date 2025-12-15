@@ -46,7 +46,6 @@ export class BlogsController {
     @Query() query: PostQueryParams,
     @CurrentUserId() userId: number,
   ): Promise<BasePaginatedResponse<PostViewModel>> {
-    console.log(id);
     return await this.queryBus.execute(
       new GetAllPostByIdQuery(id, query, userId),
     );

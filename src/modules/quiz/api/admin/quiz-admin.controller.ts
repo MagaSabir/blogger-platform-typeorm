@@ -1,31 +1,40 @@
-import { Body, Controller, Delete, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { CreateQuestionsInputDto } from './input-dto/create-questions.input-dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Question } from '../../entitys/questions.entity';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreateQuestionCommand } from '../../application/usecase/create-question.usecase';
+import { QuestionViewModel } from '../view-models/Question-view-model';
+import { DeleteQuestionCommand } from '../../application/usecase/delete-question.usecase';
 
-@Controller('sa/quiz')
+@Controller('sa/quiz/questions')
 export class QuizAdminController {
-  constructor(
-    @InjectRepository(Question) private qRepo: Repository<Question>,
-  ) {}
+  constructor(private commandBus: CommandBus) {}
 
-  @Post('questions')
-  async createQuestion(@Body() dto: CreateQuestionsInputDto) {
-    const question = new Question();
-    question.body = dto.body;
-    question.correctAnswers = dto.correctAnswers;
-    await question.save();
-    return question;
+  @Post()
+  async createQuestion(
+    @Body() dto: CreateQuestionsInputDto,
+  ): Promise<QuestionViewModel> {
+    return this.commandBus.execute(new CreateQuestionCommand(dto));
   }
 
-  @Delete()
-  async deleteQuestion() {}
-  //TODO - Удалить или обновить опубликованный вопрос не можем
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteQuestion(@Param('id') id: string) {
+    await this.commandBus.execute(new DeleteQuestionCommand(id));
+  }
 
-  @Put()
+  @Put(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async updateQuestion() {}
 
-  @Put()
+  @Put(':id/publish')
   async changePublishStatus() {}
 }
