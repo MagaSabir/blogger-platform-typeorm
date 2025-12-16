@@ -2,8 +2,6 @@ import { CreateQuestionsInputDto } from '../../api/admin/input-dto/create-questi
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { QuestionRepository } from '../../infrastructure/question.repository';
 import { Question } from '../../entitys/questions.entity';
-import { DomainException } from '../../../../core/exceptions/domain.exceptions';
-import { DomainExceptionCodes } from '../../../../core/exceptions/domain-exception-codes';
 
 export class CreateQuestionCommand {
   constructor(public dto: CreateQuestionsInputDto) {}

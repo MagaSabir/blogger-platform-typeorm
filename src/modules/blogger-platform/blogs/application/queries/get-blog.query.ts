@@ -1,6 +1,5 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { BlogsQueryRepository } from '../../infrastructure/query-repository/blogs.query-repository';
-import { BlogViewModel } from './view-dto/blog.view-model';
 import { NotFoundException } from '@nestjs/common';
 
 export class GetBlogQuery {

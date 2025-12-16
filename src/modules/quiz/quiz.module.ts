@@ -12,6 +12,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { DeleteQuestionUseCase } from './application/usecase/delete-question.usecase';
 import { ChangeQuestionStatusUseCase } from './application/usecase/change-question-status.usecase';
 import { UpdateQuestionUseCase } from './application/usecase/update-question.usecase';
+import { GetQuestionsQueryHandler } from './application/queries/get-questions.query';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { UpdateQuestionUseCase } from './application/usecase/update-question.use
     DeleteQuestionUseCase,
     ChangeQuestionStatusUseCase,
     UpdateQuestionUseCase,
+    GetQuestionsQueryHandler,
   ],
 })
 export class QuizModule {}

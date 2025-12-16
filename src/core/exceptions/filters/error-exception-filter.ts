@@ -53,13 +53,14 @@ export class DomainHttpExceptionsFilter implements ExceptionFilter {
 
     const status = this.mapToHttpStatus(exception.code);
 
-    const extensions =
-      exception.extensions.length > 0
-        ? exception.extensions
-        : [{ message: exception.message, field: '' }];
+    if (exception.code === DomainExceptionCodes.ValidationError) {
+      return response.status(status).json({
+        errorsMessages: exception.extensions,
+      });
+    }
 
-    response.status(status).json({
-      errorsMessages: extensions,
+    return response.status(status).json({
+      message: exception.message,
     });
   }
 
