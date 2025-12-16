@@ -8,18 +8,16 @@ export class Extension {
 }
 
 export class DomainException extends Error {
-  message: string;
   code: DomainExceptionCodes;
   extensions: Extension[];
 
-  constructor(errorInfo: {
+  constructor(props: {
     code: DomainExceptionCodes;
     message: string;
     extensions?: Extension[];
   }) {
-    super(errorInfo.message);
-    this.message = errorInfo.message;
-    this.code = errorInfo.code;
-    this.extensions = errorInfo.extensions || [];
+    super(props.message);
+    this.code = props.code;
+    this.extensions = props.extensions || [];
   }
 }

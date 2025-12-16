@@ -1,4 +1,8 @@
-import { INestApplication, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  INestApplication,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   CreateQuestionCommand,
   CreateQuestionUseCase,
@@ -27,17 +31,7 @@ describe('Question Integration', () => {
 
     app = moduleRef.createNestApplication();
     await app.init();
-
-    useCase = app.get(CreateQuestionUseCase);
-    deleteUseCase = app.get(DeleteQuestionUseCase);
-
     dataSource = app.get(DataSource);
-
-    repo = app.get(QuestionRepository);
-  });
-
-  afterAll(async () => {
-    await app.close();
 
     const entities = dataSource.entityMetadatas;
 
@@ -47,6 +41,15 @@ describe('Question Integration', () => {
         `TRUNCATE TABLE "${entity.tableName}" RESTART IDENTITY CASCADE`,
       );
     }
+
+    useCase = app.get(CreateQuestionUseCase);
+    deleteUseCase = app.get(DeleteQuestionUseCase);
+
+    repo = app.get(QuestionRepository);
+  });
+
+  afterAll(async () => {
+    await app.close();
   });
 
   let questionId: string;
@@ -56,8 +59,7 @@ describe('Question Integration', () => {
       body: 'test1',
       correctAnswers: ['answer1'],
     };
-    const command = new CreateQuestionCommand(dto);
-    const question = await useCase.execute(command);
+    const question = await useCase.execute(new CreateQuestionCommand(dto));
 
     questionId = question.id;
 
@@ -68,8 +70,25 @@ describe('Question Integration', () => {
     const command = new DeleteQuestionCommand(questionId);
     await deleteUseCase.execute(command);
 
-    await expect(repo.findNoPublishedQuestionById(questionId)).rejects.toThrow(
+    await expect(repo.findNotPublishedQuestionById(questionId)).rejects.toThrow(
       NotFoundException,
     );
+  });
+
+  it('should create question and change status', async () => {
+    const dto: CreateQuestionsInputDto = {
+      body: 'test1',
+      correctAnswers: ['answer1'],
+    };
+
+    const question = await useCase.execute(new CreateQuestionCommand(dto));
+    expect(question.published).toBe(false);
+
+    question.publish();
+
+    expect(question.published).toBe(true);
+    // throw new Error if question status already published
+
+    console.log(question.publish());
   });
 });

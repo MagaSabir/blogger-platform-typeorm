@@ -17,12 +17,18 @@ export class QuestionRepository {
     await this.questionRepo.softDelete(id);
   }
 
-  async findNoPublishedQuestionById(id: string): Promise<Question> {
+  async findNotPublishedQuestionById(id: string): Promise<Question> {
     const question: Question | null = await this.questionRepo.findOne({
       where: [{ id, published: false }],
     });
 
     if (!question) throw new NotFoundException();
     return question;
+  }
+
+  async findById(id: string): Promise<Question | null> {
+    return await this.questionRepo.findOne({
+      where: { id },
+    });
   }
 }

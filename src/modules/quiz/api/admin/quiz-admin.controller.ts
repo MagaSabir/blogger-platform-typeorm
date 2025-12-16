@@ -13,6 +13,8 @@ import { CommandBus } from '@nestjs/cqrs';
 import { CreateQuestionCommand } from '../../application/usecase/create-question.usecase';
 import { QuestionViewModel } from '../view-models/Question-view-model';
 import { DeleteQuestionCommand } from '../../application/usecase/delete-question.usecase';
+import { PublishQuestionInputDto } from './input-dto/publish-question.input-dto';
+import { ChangeQuestionStatusCommand } from '../../application/usecase/change-question-status.usecase';
 
 @Controller('sa/quiz/questions')
 export class QuizAdminController {
@@ -36,5 +38,13 @@ export class QuizAdminController {
   async updateQuestion() {}
 
   @Put(':id/publish')
-  async changePublishStatus() {}
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async changePublishStatus(
+    @Param('id') id: string,
+    @Body() dto: PublishQuestionInputDto,
+  ) {
+    await this.commandBus.execute(
+      new ChangeQuestionStatusCommand(dto.published, id),
+    );
+  }
 }

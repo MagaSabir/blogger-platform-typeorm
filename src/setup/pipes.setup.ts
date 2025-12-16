@@ -6,30 +6,24 @@ import {
 } from '../core/exceptions/domain.exceptions';
 import { DomainExceptionCodes } from '../core/exceptions/domain-exception-codes';
 
-export const errorFormatter = (
-  errors: ValidationError[],
-  errorMessage?: any,
-): Extension[] => {
-  const errorsForResponse = errorMessage || [];
+export const errorFormatter = (errors: ValidationError[]): Extension[] => {
+  const result: Extension[] = [];
 
   for (const error of errors) {
-    if (!error?.constraints && error?.children?.length) {
-      errorFormatter(error.children, errorsForResponse);
-    } else if (error?.constraints) {
-      const constrainKeys = Object.keys(error.constraints);
-
-      for (const key of constrainKeys) {
-        errorsForResponse.push({
-          message: error.constraints[key]
-            ? `${error.constraints[key]}; Received value: ${error?.value}`
-            : '',
+    if (error.constraints) {
+      for (const message of Object.values(error.constraints)) {
+        result.push({
           field: error.property,
+          message,
         });
       }
     }
+    if (error.children?.length) {
+      result.push(...errorFormatter(error.children));
+    }
   }
 
-  return errorsForResponse;
+  return result;
 };
 
 export function pipesSetup(app: INestApplication) {
@@ -37,14 +31,13 @@ export function pipesSetup(app: INestApplication) {
     new ValidationPipe({
       transform: true,
       whitelist: true,
-      stopAtFirstError: true,
       exceptionFactory: (errors: ValidationError[]) => {
-        const formatted = errorFormatter(errors);
+        const extensions = errorFormatter(errors);
 
-        throw new DomainException({
+        return new DomainException({
           code: DomainExceptionCodes.ValidationError,
           message: 'Validation Error',
-          extensions: formatted,
+          extensions,
         });
       },
     }),

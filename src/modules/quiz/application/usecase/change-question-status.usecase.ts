@@ -1,8 +1,12 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { QuestionRepository } from '../../infrastructure/question.repository';
+import { NotFoundException } from '@nestjs/common';
 
 export class ChangeQuestionStatusCommand {
-  constructor() {}
+  constructor(
+    public published: boolean,
+    public id: string,
+  ) {}
 }
 
 @CommandHandler(ChangeQuestionStatusCommand)
@@ -11,5 +15,15 @@ export class ChangeQuestionStatusUseCase
 {
   constructor(private questionRepo: QuestionRepository) {}
 
-  async execute(command: ChangeQuestionStatusCommand) {}
+  async execute(command: ChangeQuestionStatusCommand) {
+    const question = await this.questionRepo.findById(command.id);
+    if (!question) throw new NotFoundException();
+
+    if (command.published) {
+      question.publish();
+    } else {
+      question.unpublish();
+    }
+    await this.questionRepo.save(question);
+  }
 }

@@ -1,5 +1,4 @@
 import {
-  BaseEntity,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
@@ -9,6 +8,12 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { GameQuestion } from './game-question.entity';
+import {
+  DomainException,
+  Extension,
+} from '../../../core/exceptions/domain.exceptions';
+import { DomainExceptionCodes } from '../../../core/exceptions/domain-exception-codes';
+import { BadRequestException } from '@nestjs/common';
 
 @Entity('Question')
 export class Question {
@@ -36,6 +41,19 @@ export class Question {
   @DeleteDateColumn()
   deletedAt: Date | null;
 
+  publish() {
+    if (this.published) {
+      throw new BadRequestException('Question already publish');
+    }
+    this.published = true;
+  }
+
+  unpublish() {
+    if (!this.published) {
+      throw new BadRequestException('Question already unpublish');
+    }
+    this.published = false;
+  }
   static createQuestion(body: string, correctAnswers: string[]) {
     const question = new Question();
     question.body = body;
