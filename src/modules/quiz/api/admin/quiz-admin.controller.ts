@@ -8,10 +8,11 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { CreateQuestionsInputDto } from './input-dto/create-questions.input-dto';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateQuestionCommand } from '../../application/usecase/create-question.usecase';
 import { QuestionViewModel } from '../view-models/Question-view-model';
 import { DeleteQuestionCommand } from '../../application/usecase/delete-question.usecase';
@@ -20,15 +21,20 @@ import { ChangeQuestionStatusCommand } from '../../application/usecase/change-qu
 import { UpdateQuestionInputDto } from './input-dto/update-question.input-dto';
 import { UpdateQuestionCommand } from '../../application/usecase/update-question.usecase';
 import { BasicAuthGuard } from '../../../user-accounts/guards/basic/basic-auth.guard';
+import { QuestionQueryParams } from './input-dto/question-query-params';
+import { GetQuestionQuery } from '../../application/queries/get-questions.query';
 
 @Controller('sa/quiz/questions')
 @UseGuards(BasicAuthGuard)
 export class QuizAdminController {
-  constructor(private commandBus: CommandBus) {}
+  constructor(
+    private commandBus: CommandBus,
+    private queryBus: QueryBus,
+  ) {}
 
   @Get()
-  async getQuestions() {
-    return 'question';
+  async getQuestions(@Query() query: QuestionQueryParams) {
+    return this.queryBus.execute(new GetQuestionQuery(query));
   }
 
   @Post()

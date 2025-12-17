@@ -11,7 +11,6 @@ export class BlogViewModel {
 
   static mapToView(blog: Blog): BlogViewModel {
     const dto = new BlogViewModel();
-    console.log(blog);
     dto.id = blog.id.toString();
     dto.name = blog.name;
     dto.description = blog.description;
