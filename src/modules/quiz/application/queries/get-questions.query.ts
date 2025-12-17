@@ -1,6 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { QuestionQueryParams } from '../../api/admin/input-dto/question-query-params';
-import { QuestionQueryRepository } from '../../infrastructure/question-query-repository';
+import { QuestionQueryRepository } from '../../infrastructure/query-repository/question-query-repository';
 
 export class GetQuestionQuery {
   constructor(public queryParams: QuestionQueryParams) {}

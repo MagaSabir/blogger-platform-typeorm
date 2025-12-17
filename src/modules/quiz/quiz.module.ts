@@ -13,7 +13,7 @@ import { DeleteQuestionUseCase } from './application/usecase/delete-question.use
 import { ChangeQuestionStatusUseCase } from './application/usecase/change-question-status.usecase';
 import { UpdateQuestionUseCase } from './application/usecase/update-question.usecase';
 import { GetQuestionsQueryHandler } from './application/queries/get-questions.query';
-import { QuestionQueryRepository } from './infrastructure/question-query-repository';
+import { QuestionQueryRepository } from './infrastructure/query-repository/question-query-repository';
 
 @Module({
   imports: [

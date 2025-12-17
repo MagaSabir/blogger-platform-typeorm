@@ -24,7 +24,7 @@ import { BasicAuthGuard } from '../../../user-accounts/guards/basic/basic-auth.g
 import { QuestionQueryParams } from './input-dto/question-query-params';
 import { GetQuestionQuery } from '../../application/queries/get-questions.query';
 import { Question } from '../../entitys/questions.entity';
-import { QuestionQueryRepository } from '../../infrastructure/question-query-repository';
+import { QuestionQueryRepository } from '../../infrastructure/query-repository/question-query-repository';
 
 @Controller('sa/quiz/questions')
 @UseGuards(BasicAuthGuard)

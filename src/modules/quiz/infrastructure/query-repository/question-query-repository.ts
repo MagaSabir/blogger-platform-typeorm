@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Question } from '../entitys/questions.entity';
-import { QuestionQueryParams } from '../api/admin/input-dto/question-query-params';
-import { QuestionViewModel } from '../api/view-models/Question-view-model';
+import { Question } from '../../entitys/questions.entity';
+import { QuestionQueryParams } from '../../api/admin/input-dto/question-query-params';
+import { QuestionViewModel } from '../../api/view-models/Question-view-model';
 
 @Injectable()
 export class QuestionQueryRepository {

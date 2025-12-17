@@ -17,6 +17,7 @@ import {
   UpdateQuestionCommand,
   UpdateQuestionUseCase,
 } from '../application/usecase/update-question.usecase';
+import { clearDb } from './utils/clear-db';
 
 describe('Question Integration', () => {
   let app: INestApplication;
@@ -36,14 +37,7 @@ describe('Question Integration', () => {
     await app.init();
     dataSource = app.get(DataSource);
 
-    const entities = dataSource.entityMetadatas;
-
-    for (const entity of entities) {
-      const repository = dataSource.getRepository(entity.name);
-      await repository.query(
-        `TRUNCATE TABLE "${entity.tableName}" RESTART IDENTITY CASCADE`,
-      );
-    }
+    await clearDb(dataSource);
 
     useCase = app.get(CreateQuestionUseCase);
     deleteUseCase = app.get(DeleteQuestionUseCase);
