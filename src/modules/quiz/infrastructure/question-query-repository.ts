@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Question } from '../entitys/questions.entity';
 import { QuestionQueryParams } from '../api/admin/input-dto/question-query-params';
+import { QuestionViewModel } from '../api/view-models/Question-view-model';
 
 @Injectable()
 export class QuestionQueryRepository {
@@ -42,5 +43,11 @@ export class QuestionQueryRepository {
       totalCount,
       items: questions,
     };
+  }
+
+  async getQuestion(id: string): Promise<QuestionViewModel> {
+    const question = await this.questionRepository.findOne({ where: { id } });
+    if (!question) throw new NotFoundException();
+    return QuestionViewModel.mapToView(question);
   }
 }

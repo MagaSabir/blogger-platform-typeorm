@@ -23,11 +23,14 @@ import { UpdateQuestionCommand } from '../../application/usecase/update-question
 import { BasicAuthGuard } from '../../../user-accounts/guards/basic/basic-auth.guard';
 import { QuestionQueryParams } from './input-dto/question-query-params';
 import { GetQuestionQuery } from '../../application/queries/get-questions.query';
+import { Question } from '../../entitys/questions.entity';
+import { QuestionQueryRepository } from '../../infrastructure/question-query-repository';
 
 @Controller('sa/quiz/questions')
 @UseGuards(BasicAuthGuard)
 export class QuizAdminController {
   constructor(
+    private queryRepo: QuestionQueryRepository,
     private commandBus: CommandBus,
     private queryBus: QueryBus,
   ) {}
@@ -41,7 +44,10 @@ export class QuizAdminController {
   async createQuestion(
     @Body() dto: CreateQuestionsInputDto,
   ): Promise<QuestionViewModel> {
-    return this.commandBus.execute(new CreateQuestionCommand(dto));
+    const question: Question = await this.commandBus.execute(
+      new CreateQuestionCommand(dto),
+    );
+    return this.queryRepo.getQuestion(question.id);
   }
 
   @Delete(':id')

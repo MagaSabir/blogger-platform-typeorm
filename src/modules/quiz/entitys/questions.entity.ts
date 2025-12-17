@@ -31,8 +31,8 @@ export class Question {
   @CreateDateColumn()
   createdAt: Date;
 
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  updatedAt: Date | null;
 
   @DeleteDateColumn()
   deletedAt: Date | null;

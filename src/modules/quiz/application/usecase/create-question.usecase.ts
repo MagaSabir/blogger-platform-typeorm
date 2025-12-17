@@ -13,7 +13,7 @@ export class CreateQuestionUseCase
 {
   constructor(private questionRepo: QuestionRepository) {}
 
-  async execute(command: CreateQuestionCommand) {
+  async execute(command: CreateQuestionCommand): Promise<Question> {
     const { body, correctAnswers } = command.dto;
     const question = Question.createQuestion(body, correctAnswers);
     return await this.questionRepo.save(question);
