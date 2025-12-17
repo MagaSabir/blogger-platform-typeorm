@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  INestApplication,
-  NotFoundException,
-} from '@nestjs/common';
+import { INestApplication, NotFoundException } from '@nestjs/common';
 import {
   CreateQuestionCommand,
   CreateQuestionUseCase,
@@ -16,11 +12,18 @@ import {
 } from '../application/usecase/delete-question.usecase';
 import { QuestionRepository } from '../infrastructure/question.repository';
 import { CreateQuestionsInputDto } from '../api/admin/input-dto/create-questions.input-dto';
+import { DomainException } from '../../../core/exceptions/domain.exceptions';
+import {
+  UpdateQuestionCommand,
+  UpdateQuestionUseCase,
+} from '../application/usecase/update-question.usecase';
 
 describe('Question Integration', () => {
   let app: INestApplication;
   let useCase: CreateQuestionUseCase;
   let deleteUseCase: DeleteQuestionUseCase;
+  let updateUseCase: UpdateQuestionUseCase;
+
   let dataSource: DataSource;
   let repo: QuestionRepository;
 
@@ -44,6 +47,7 @@ describe('Question Integration', () => {
 
     useCase = app.get(CreateQuestionUseCase);
     deleteUseCase = app.get(DeleteQuestionUseCase);
+    updateUseCase = app.get(UpdateQuestionUseCase);
 
     repo = app.get(QuestionRepository);
   });
@@ -88,7 +92,44 @@ describe('Question Integration', () => {
 
     expect(question.published).toBe(true);
     // throw new Error if question status already published
+    expect(() => question.publish()).toThrow(DomainException);
+  });
 
-    console.log(question.publish());
+  it('should update not published question ', async () => {
+    const question = await useCase.execute(
+      new CreateQuestionCommand({
+        body: 'test1',
+        correctAnswers: ['answer1'],
+      }),
+    );
+
+    await useCase.execute(
+      new UpdateQuestionCommand(question.id, {
+        body: 'updated-test1',
+        correctAnswers: ['updated-answer1'],
+      }),
+    );
+
+    const updated = await repo.findById(question.id);
+    expect(updated).toBeDefined();
+  });
+
+  it('should throw error when update pubkish qiestion', async () => {
+    const dto: CreateQuestionsInputDto = {
+      body: 'test1',
+      correctAnswers: ['answer1'],
+    };
+    const updatedDto: CreateQuestionsInputDto = {
+      body: 'updated-test1',
+      correctAnswers: ['updated-answer1'],
+    };
+
+    const question = await useCase.execute(new CreateQuestionCommand(dto));
+    question.publish();
+    await repo.save(question);
+
+    await expect(
+      updateUseCase.execute(new UpdateQuestionCommand(question.id, updatedDto)),
+    ).rejects.toThrow(DomainException);
   });
 });
