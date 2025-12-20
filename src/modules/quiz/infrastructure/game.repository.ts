@@ -5,7 +5,9 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class GameRepository {
-  constructor(@InjectRepository(Game) private gameRepo: Repository<Game>) {}
+  constructor(@InjectRepository(Game) private repo: Repository<Game>) {}
 
-  async findActiveGame(userId: string) {}
+  async save(game: Game): Promise<Game> {
+    return this.repo.save(game);
+  }
 }

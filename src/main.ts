@@ -13,6 +13,17 @@ async function bootstrap() {
   app.use(cookieParser());
 
   console.log('🚀 Starting server on port:', coreConfig.port);
+  process.on('SIGTERM', () => {
+    app.close().then(() => {
+      process.exit(0);
+    });
+  });
+
+  process.on('SIGINT', () => {
+    app.close().then(() => {
+      process.exit(0);
+    });
+  });
 
   await app.listen(coreConfig.port || 3000);
 }

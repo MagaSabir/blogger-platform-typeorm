@@ -14,13 +14,16 @@ import { ChangeQuestionStatusUseCase } from './application/usecase/change-questi
 import { UpdateQuestionUseCase } from './application/usecase/update-question.usecase';
 import { GetQuestionsQueryHandler } from './application/queries/get-questions.query';
 import { QuestionQueryRepository } from './infrastructure/query-repository/question-query-repository';
+import { CreatePairConnectionUseCase } from './application/usecase/create-pair-connection.usecase';
+import { GameRepository } from './infrastructure/game.repository';
+import { QuizController } from './api/quiz.controller';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Question, Player, Game, GameQuestion, Answer]),
     CqrsModule,
   ],
-  controllers: [QuizAdminController],
+  controllers: [QuizAdminController, QuizController],
   providers: [
     QuestionRepository,
     QuestionQueryRepository,
@@ -29,6 +32,8 @@ import { QuestionQueryRepository } from './infrastructure/query-repository/quest
     ChangeQuestionStatusUseCase,
     UpdateQuestionUseCase,
     GetQuestionsQueryHandler,
+    CreatePairConnectionUseCase,
+    GameRepository,
   ],
 })
 export class QuizModule {}
