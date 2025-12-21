@@ -11,8 +11,6 @@ export class QuizController {
 
   @Post('connection')
   async connect(@CurrentUserId() userId: string) {
-    console.log(
-      await this.commandBus.execute(new CreatePairConnectionCommand(userId)),
-    );
+    await this.commandBus.execute(new CreatePairConnectionCommand(userId));
   }
 }

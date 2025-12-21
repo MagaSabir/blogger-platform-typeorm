@@ -1,13 +1,31 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Game } from '../entitys/game.entity';
-import { Repository } from 'typeorm';
+import { Game, GameStatus } from '../entitys/game.entity';
+import { In, Repository } from 'typeorm';
 
 @Injectable()
 export class GameRepository {
   constructor(@InjectRepository(Game) private repo: Repository<Game>) {}
 
-  async save(game: Game): Promise<Game> {
-    return this.repo.save(game);
+  async save(game: Game) {
+    await this.repo.save(game);
+  }
+
+  async hasActiveGame(userId: string) {
+    const count = await this.repo.count({
+      where: {
+        players: { userId },
+        status: In([GameStatus.ACTIVE, GameStatus.PENDING]),
+      },
+    });
+    return count > 0;
+  }
+
+  async findPendingGame() {
+    return this.repo.findOne({
+      where: {
+        status: GameStatus.PENDING,
+      },
+    });
   }
 }

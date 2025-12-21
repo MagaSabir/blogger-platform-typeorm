@@ -21,10 +21,10 @@ export class Game {
   @Column({ type: 'enum', enum: GameStatus, default: GameStatus.PENDING })
   public status: GameStatus;
 
-  @OneToMany(() => Player, (player) => player.game)
+  @OneToMany(() => Player, (player) => player.game, { cascade: true })
   players: Player[];
 
-  @OneToMany(() => GameQuestion, (gq) => gq.game)
+  @OneToMany(() => GameQuestion, (gq) => gq.game, { cascade: true })
   public questions: GameQuestion[];
 
   @CreateDateColumn()

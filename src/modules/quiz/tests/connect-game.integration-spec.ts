@@ -3,7 +3,10 @@ import { DataSource } from 'typeorm';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../../../app.module';
 import { clearDb } from './utils/clear-db';
-import { CreatePairConnectionUseCase } from '../application/usecase/create-pair-connection.usecase';
+import {
+  CreatePairConnectionCommand,
+  CreatePairConnectionUseCase,
+} from '../application/usecase/create-pair-connection.usecase';
 import { GameRepository } from '../infrastructure/game.repository';
 import { Game } from '../entitys/game.entity';
 import { randomUUID } from 'crypto';
@@ -34,5 +37,10 @@ describe('CREATE GAME', () => {
     await app.close();
   });
 
-  it('should create game', async () => {});
+  it('should create game', async () => {
+    const userId = randomUUID();
+    const game: any = await useCase.execute(
+      new CreatePairConnectionCommand(userId),
+    );
+  });
 });
