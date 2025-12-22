@@ -17,7 +17,7 @@ export class CreatePairConnectionUseCase
     private playerRepo: PlayerRepository,
   ) {}
 
-  async execute(command: CreatePairConnectionCommand): Promise<Game> {
+  async execute(command: CreatePairConnectionCommand): Promise<string> {
     if (await this.playerRepo.hasActiveGame(command.userId)) {
       throw new ForbiddenException('Already in game');
     }
@@ -31,6 +31,6 @@ export class CreatePairConnectionUseCase
     game.addPlayer(command.userId);
 
     await this.gameRepo.save(game);
-    return game;
+    return game.id;
   }
 }

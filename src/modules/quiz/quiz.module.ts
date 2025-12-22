@@ -18,6 +18,8 @@ import { CreatePairConnectionUseCase } from './application/usecase/create-pair-c
 import { GameRepository } from './infrastructure/game.repository';
 import { QuizController } from './api/quiz.controller';
 import { PlayerRepository } from './infrastructure/player.repository';
+import { GetGameQueryHandler } from './application/queries/get-game-query';
+import { GameQueryRepository } from './infrastructure/query-repository/game.query-repository';
 
 @Module({
   imports: [
@@ -29,11 +31,13 @@ import { PlayerRepository } from './infrastructure/player.repository';
     QuestionRepository,
     QuestionQueryRepository,
     PlayerRepository,
+    GameQueryRepository,
     CreateQuestionUseCase,
     DeleteQuestionUseCase,
     ChangeQuestionStatusUseCase,
     UpdateQuestionUseCase,
     GetQuestionsQueryHandler,
+    GetGameQueryHandler,
     CreatePairConnectionUseCase,
     GameRepository,
   ],
