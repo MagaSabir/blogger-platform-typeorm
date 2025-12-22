@@ -17,6 +17,7 @@ import { QuestionQueryRepository } from './infrastructure/query-repository/quest
 import { CreatePairConnectionUseCase } from './application/usecase/create-pair-connection.usecase';
 import { GameRepository } from './infrastructure/game.repository';
 import { QuizController } from './api/quiz.controller';
+import { PlayerRepository } from './infrastructure/player.repository';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { QuizController } from './api/quiz.controller';
   providers: [
     QuestionRepository,
     QuestionQueryRepository,
+    PlayerRepository,
     CreateQuestionUseCase,
     DeleteQuestionUseCase,
     ChangeQuestionStatusUseCase,

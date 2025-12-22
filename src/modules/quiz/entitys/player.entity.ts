@@ -37,4 +37,13 @@ export class Player {
 
   @OneToMany(() => Answer, (answer) => answer.player)
   answers: Answer[];
+
+  static create(userId: string, position: number, gameId: string) {
+    const player = new Player();
+    player.userId = userId;
+    player.position = position;
+    player.gameId = gameId;
+    player.answers = [];
+    return player;
+  }
 }

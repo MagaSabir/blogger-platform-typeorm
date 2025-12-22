@@ -11,21 +11,12 @@ export class GameRepository {
     await this.repo.save(game);
   }
 
-  async hasActiveGame(userId: string) {
-    const count = await this.repo.count({
-      where: {
-        players: { userId },
-        status: In([GameStatus.ACTIVE, GameStatus.PENDING]),
-      },
-    });
-    return count > 0;
-  }
-
   async findPendingGame() {
     return this.repo.findOne({
       where: {
         status: GameStatus.PENDING,
       },
+      relations: ['players'],
     });
   }
 }

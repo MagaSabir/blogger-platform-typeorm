@@ -7,6 +7,8 @@ import {
 } from 'typeorm';
 import { Player } from './player.entity';
 import { GameQuestion } from './game-question.entity';
+import { DomainException } from '../../../core/exceptions/domain.exceptions';
+import { DomainExceptionCodes } from '../../../core/exceptions/domain-exception-codes';
 
 export enum GameStatus {
   PENDING = 'Pending',
@@ -35,4 +37,36 @@ export class Game {
 
   @Column({ type: 'timestamp', nullable: true })
   finishGameDate: Date | null;
+
+  start() {
+    this.status = GameStatus.ACTIVE;
+    this.startGameDate = new Date();
+  }
+
+  addPlayer(userId: string) {
+    if (this.players.length >= 2) {
+      throw new DomainException({
+        code: DomainExceptionCodes.BadRequest,
+        message: 'Already thwo players',
+      });
+    }
+
+    const position = this.players.length == 0 ? 1 : 2;
+
+    const player = Player.create(userId, position, this.id);
+    this.players.push(player);
+
+    if (position === 2) {
+      this.start();
+    }
+    return player;
+  }
+
+  static create() {
+    const game = new Game();
+    game.status = GameStatus.PENDING;
+    game.players = [];
+    game.questions = [];
+    return game;
+  }
 }
