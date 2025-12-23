@@ -5,6 +5,8 @@ import { DataSource } from 'typeorm';
 import { Player } from '../../entitys/player.entity';
 import { User } from '../../../user-accounts/users/entity/user.entity';
 import { Answer } from '../../entitys/answer.entity';
+import { Question } from '../../entitys/questions.entity';
+import { GameQuestion } from '../../entitys/game-question.entity';
 
 export type AnswerStatus = 'Correct' | 'Incorrect';
 
@@ -50,6 +52,15 @@ export class GameQueryRepository {
       .getRawOne();
     if (!game) return null;
 
+    const questions = await this.dataSource
+      .getRepository(GameQuestion)
+      .createQueryBuilder('qg')
+      .select(['q.id as id', 'q.body as body'])
+      .leftJoin('qg.question', 'q')
+      .where('qg.gameId = :gameId', { gameId })
+      .orderBy('qg.order', 'ASC')
+      .getRawMany();
+    console.log(questions);
     const players: RawPlayerData[] = await this.dataSource
       .getRepository(Player)
       .createQueryBuilder('p')
@@ -94,12 +105,13 @@ export class GameQueryRepository {
 
     return {
       id: game.id,
+      firstPlayerProgress: mapPlayer(1),
+      secondPlayerProgress: mapPlayer(2),
+      questions: questions,
       status: game.status,
       pairCreatedDate: game.pairCreatedDate,
       startGameDate: game.startGameDate,
       finishGameDate: game.finishGameDate,
-      firstPlayerProgress: mapPlayer(1),
-      secondPlayerProgress: mapPlayer(2),
     };
   }
 }

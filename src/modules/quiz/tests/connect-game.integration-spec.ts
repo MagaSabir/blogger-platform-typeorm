@@ -10,10 +10,20 @@ import {
 import { GameRepository } from '../infrastructure/game.repository';
 import { Game } from '../entitys/game.entity';
 import { randomUUID } from 'crypto';
+import {
+  CreateUserCommand,
+  CreateUserUseCase,
+} from '../../user-accounts/users/application/usecase/admins/create-user.usecase';
+import {
+  GetGameQuery,
+  GetGameQueryHandler,
+} from '../application/queries/get-game-query';
 
 describe('CREATE GAME', () => {
   let app: INestApplication;
   let useCase: CreatePairConnectionUseCase;
+  let createUserUseCase: CreateUserUseCase;
+  let getGameQueryHandler: GetGameQueryHandler;
 
   let repo: GameRepository;
   let dataSource: DataSource;
@@ -27,6 +37,8 @@ describe('CREATE GAME', () => {
     await app.init();
 
     useCase = app.get(CreatePairConnectionUseCase);
+    createUserUseCase = app.get(CreateUserUseCase);
+    getGameQueryHandler = app.get(GetGameQueryHandler);
     repo = app.get(GameRepository);
     dataSource = app.get(DataSource);
 
@@ -38,9 +50,19 @@ describe('CREATE GAME', () => {
   });
 
   it('should create game', async () => {
-    const userId = randomUUID();
-    const game: any = await useCase.execute(
+    const dto = {
+      login: 'test1',
+      password: 'string',
+      email: 'example@example.com',
+    };
+
+    const userId = await createUserUseCase.execute(new CreateUserCommand(dto));
+    const gameId: string = await useCase.execute(
       new CreatePairConnectionCommand(userId),
     );
+    const game = await getGameQueryHandler.execute(new GetGameQuery(gameId));
+    expect(game?.status).toBe('Pending');
+    expect(game?.firstPlayerProgress).toBeDefined();
+    console.log(game);
   });
 });
