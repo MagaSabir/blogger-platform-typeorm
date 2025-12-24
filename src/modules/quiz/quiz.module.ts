@@ -20,6 +20,7 @@ import { QuizController } from './api/quiz.controller';
 import { PlayerRepository } from './infrastructure/player.repository';
 import { GetGameQueryHandler } from './application/queries/get-game-query';
 import { GameQueryRepository } from './infrastructure/query-repository/game.query-repository';
+import { GameQuestionRepository } from './infrastructure/game-question.repository';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { GameQueryRepository } from './infrastructure/query-repository/game.quer
     GetGameQueryHandler,
     CreatePairConnectionUseCase,
     GameRepository,
+    GameQuestionRepository,
   ],
 })
 export class QuizModule {}

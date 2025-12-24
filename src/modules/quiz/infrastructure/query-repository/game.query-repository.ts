@@ -60,7 +60,7 @@ export class GameQueryRepository {
       .where('qg.gameId = :gameId', { gameId })
       .orderBy('qg.order', 'ASC')
       .getRawMany();
-    console.log(questions);
+
     const players: RawPlayerData[] = await this.dataSource
       .getRepository(Player)
       .createQueryBuilder('p')

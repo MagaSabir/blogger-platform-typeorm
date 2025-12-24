@@ -29,4 +29,14 @@ export class GameQuestion {
 
   @Column()
   public order: number;
+
+  static createGameQuestion(game: Game, question: Question, order: number) {
+    const gq = new GameQuestion();
+    gq.game = game;
+    gq.gameId = game.id;
+    gq.questionId = question.id;
+    gq.question = question;
+    gq.order = order;
+    return gq;
+  }
 }

@@ -31,4 +31,13 @@ export class QuestionRepository {
       where: { id },
     });
   }
+
+  async getRandomQuestions(count: number) {
+    return this.questionRepo
+      .createQueryBuilder('q')
+      .where('q.published = true')
+      .orderBy('RANDOM()')
+      .take(count)
+      .getRawMany();
+  }
 }
