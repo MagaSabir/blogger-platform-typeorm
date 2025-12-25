@@ -46,6 +46,7 @@ export class Question {
     }
     this.body = body;
     this.correctAnswers = correctAnswers;
+    this.updatedAt = new Date();
   }
 
   publish() {
@@ -56,6 +57,7 @@ export class Question {
       });
     }
     this.published = true;
+    this.updatedAt = new Date();
   }
 
   unpublish() {

@@ -10,4 +10,8 @@ export class AnswerRepository {
   async countByPlayerId(playerId: string): Promise<number> {
     return this.repo.count({ where: { playerId } });
   }
+
+  async save(answer: Answer) {
+    await this.repo.save(answer);
+  }
 }

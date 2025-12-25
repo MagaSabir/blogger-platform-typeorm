@@ -5,6 +5,7 @@ import { ForbiddenException } from '@nestjs/common';
 import { GameQuestionRepository } from '../../infrastructure/game-question.repository';
 import { AnswerRepository } from '../../infrastructure/answer.repository';
 import { Answer } from '../../entitys/answer.entity';
+import { GameStatus } from '../../entitys/game.entity';
 
 export class AnswerCommand {
   constructor(
@@ -40,10 +41,16 @@ export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
       command.dto.answer,
     );
 
-    const answer = Answer.create(
+    const answer: Answer = Answer.create(
       player.id,
       currentGameQuestion.questionId,
       isCorrect,
     );
+
+    await this.answerRepo.save(answer);
+
+    game.processAnswer(player, isCorrect, answersCount + 1);
+
+    await this.gameRepo.save(game);
   }
 }

@@ -35,8 +35,20 @@ export class Player {
   @Column({ type: 'int' })
   public position: number;
 
+  @Column({ type: 'timestamp', nullable: true })
+  finishedAt: Date | null;
+
   @OneToMany(() => Answer, (answer) => answer.player)
   answers: Answer[];
+
+  incrementScore() {
+    this.score++;
+  }
+
+  finish() {
+    if (this.finishedAt) return; // защита от повторного вызова
+    this.finishedAt = new Date();
+  }
 
   static create(userId: string, position: number, gameId: string) {
     const player = new Player();

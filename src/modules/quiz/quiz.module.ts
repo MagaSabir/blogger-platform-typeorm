@@ -21,6 +21,8 @@ import { PlayerRepository } from './infrastructure/player.repository';
 import { GetGameQueryHandler } from './application/queries/get-game-query';
 import { GameQueryRepository } from './infrastructure/query-repository/game.query-repository';
 import { GameQuestionRepository } from './infrastructure/game-question.repository';
+import { AnswerRepository } from './infrastructure/answer.repository';
+import { AnswerUseCase } from './application/usecase/answer.usecase';
 
 @Module({
   imports: [
@@ -42,6 +44,8 @@ import { GameQuestionRepository } from './infrastructure/game-question.repositor
     CreatePairConnectionUseCase,
     GameRepository,
     GameQuestionRepository,
+    AnswerRepository,
+    AnswerUseCase,
   ],
 })
 export class QuizModule {}

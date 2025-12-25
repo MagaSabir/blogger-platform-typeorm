@@ -73,6 +73,37 @@ export class Game {
     return player;
   }
 
+  processAnswer(player: Player, isCorrect: boolean, answersCount: number) {
+    if (isCorrect) {
+      player.incrementScore();
+    }
+
+    if (answersCount === 5) {
+      player.finish();
+      this.checkFinishCondition();
+    }
+  }
+
+  checkFinishCondition() {
+    const [p1, p2] = this.players;
+
+    if (!p1.finishedAt || !p2.finishedAt) return;
+
+    const faster =
+      p1.finishedAt < p2.finishedAt
+        ? p1
+        : p2.finishedAt < p1.finishedAt
+          ? p2
+          : null;
+
+    if (faster && faster.score > 0) {
+      faster.incrementScore(); // бонус
+    }
+
+    this.status = GameStatus.FINISHED;
+    this.finishGameDate = new Date();
+  }
+
   static create() {
     const game = new Game();
     game.status = GameStatus.PENDING;

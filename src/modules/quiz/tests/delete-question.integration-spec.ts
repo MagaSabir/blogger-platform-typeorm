@@ -18,12 +18,18 @@ import {
   UpdateQuestionUseCase,
 } from '../application/usecase/update-question.usecase';
 import { clearDb } from './utils/clear-db';
+import {
+  GetQuestionQuery,
+  GetQuestionsQueryHandler,
+} from '../application/queries/get-questions.query';
+import { QuestionQueryParams } from '../api/admin/input-dto/question-query-params';
 
 describe('Question Integration', () => {
   let app: INestApplication;
   let useCase: CreateQuestionUseCase;
   let deleteUseCase: DeleteQuestionUseCase;
   let updateUseCase: UpdateQuestionUseCase;
+  let getQuestionQuery: GetQuestionsQueryHandler;
 
   let dataSource: DataSource;
   let repo: QuestionRepository;
@@ -42,6 +48,7 @@ describe('Question Integration', () => {
     useCase = app.get(CreateQuestionUseCase);
     deleteUseCase = app.get(DeleteQuestionUseCase);
     updateUseCase = app.get(UpdateQuestionUseCase);
+    getQuestionQuery = app.get(GetQuestionsQueryHandler);
 
     repo = app.get(QuestionRepository);
   });
@@ -106,6 +113,31 @@ describe('Question Integration', () => {
 
     const updated = await repo.findById(question.id);
     expect(updated).toBeDefined();
+  });
+
+  it('should update quiz question', async () => {
+    const dto: CreateQuestionsInputDto = {
+      body: 'test1',
+      correctAnswers: ['answer1'],
+    };
+    const updatedDto: CreateQuestionsInputDto = {
+      body: 'updated-test1',
+      correctAnswers: ['updated-answer1'],
+    };
+
+    const question = await useCase.execute(new CreateQuestionCommand(dto));
+    await repo.save(question);
+
+    await updateUseCase.execute(
+      new UpdateQuestionCommand(question.id, updatedDto),
+    );
+    const queryParams = new QuestionQueryParams();
+
+    const newQuestion = await getQuestionQuery.execute(
+      new GetQuestionQuery(queryParams),
+    );
+
+    console.log(newQuestion);
   });
 
   it('should throw error when update pubkish qiestion', async () => {

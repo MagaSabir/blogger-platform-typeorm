@@ -7,7 +7,7 @@ import { Repository } from 'typeorm';
 export class GameRepository {
   constructor(@InjectRepository(Game) private repo: Repository<Game>) {}
 
-  async save(game: Game) {
+  async save(game: Game): Promise<void> {
     await this.repo.save(game);
   }
 
