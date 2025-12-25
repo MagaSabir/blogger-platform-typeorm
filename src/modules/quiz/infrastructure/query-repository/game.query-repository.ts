@@ -1,43 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { Game, GameStatus } from '../../entitys/game.entity';
+import { Game } from '../../entitys/game.entity';
 import { DataSource } from 'typeorm';
 import { Player } from '../../entitys/player.entity';
 import { User } from '../../../user-accounts/users/entity/user.entity';
 import { Answer } from '../../entitys/answer.entity';
-import { Question } from '../../entitys/questions.entity';
 import { GameQuestion } from '../../entitys/game-question.entity';
-
-export type AnswerStatus = 'Correct' | 'Incorrect';
-
-export type RawGameData = {
-  id: string;
-  status: GameStatus;
-  pairCreatedDate: Date;
-  startGameDate: Date | null;
-  finishGameDate: Date | null;
-};
-
-export type RawPlayerData = {
-  playerId: string;
-  position: number;
-  score: number;
-  userId: string;
-  login: string;
-};
-
-export type RawAnswerData = {
-  questionId: string;
-  answerStatus: AnswerStatus;
-  addedAt: Date;
-  playerId: string;
-};
+import {
+  GameViewModel,
+  RawAnswerData,
+  RawGameData,
+  RawPlayerData,
+} from '../../api/view-models/game-view-model';
 
 @Injectable()
 export class GameQueryRepository {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
 
-  async findGameById(gameId: string) {
+  async findGameById(gameId: string): Promise<GameViewModel | null> {
     const game: RawGameData | undefined = await this.dataSource
       .getRepository(Game)
       .createQueryBuilder('g')
@@ -52,7 +32,10 @@ export class GameQueryRepository {
       .getRawOne();
     if (!game) return null;
 
-    const questions = await this.dataSource
+    const questions: {
+      id: string;
+      body: string;
+    }[] = await this.dataSource
       .getRepository(GameQuestion)
       .createQueryBuilder('qg')
       .select(['q.id as id', 'q.body as body'])

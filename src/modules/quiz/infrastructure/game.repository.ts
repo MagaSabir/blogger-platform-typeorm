@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Game, GameStatus } from '../entitys/game.entity';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class GameRepository {
@@ -18,5 +18,16 @@ export class GameRepository {
       },
       relations: ['players'],
     });
+  }
+
+  async findActiveGameByUserId(userId: string) {
+    return this.repo
+      .createQueryBuilder('g')
+      .innerJoin('g.players', 'player')
+      .where('player.userId =:userId', { userId })
+      .andWhere('g.status IN (:...statuses)', {
+        statuses: [GameStatus.ACTIVE, GameStatus.PENDING],
+      })
+      .getOne();
   }
 }

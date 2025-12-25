@@ -38,4 +38,12 @@ export class Answer {
 
   @CreateDateColumn()
   public addedAt: Date;
+
+  static create(playerId: string, questionId: string, isCorrect: boolean) {
+    const answer = new Answer();
+    answer.playerId = playerId;
+    answer.questionId = questionId;
+    answer.status = isCorrect ? AnswerStatus.CORRECT : AnswerStatus.INCORRECT;
+    return answer;
+  }
 }

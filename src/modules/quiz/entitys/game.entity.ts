@@ -62,6 +62,17 @@ export class Game {
     return player;
   }
 
+  getPlayerById(userId: string) {
+    const player = this.players.find((p) => p.userId === userId);
+    if (!player) {
+      throw new DomainException({
+        code: DomainExceptionCodes.BadRequest,
+        message: 'player not found in game',
+      });
+    }
+    return player;
+  }
+
   static create() {
     const game = new Game();
     game.status = GameStatus.PENDING;

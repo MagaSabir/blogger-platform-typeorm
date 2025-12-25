@@ -14,4 +14,12 @@ export class GameQuestionRepository {
   async save(question: GameQuestion[]) {
     await this.questionRepo.save(question);
   }
+
+  async findQuestionByGameId(gameId: string) {
+    return this.questionRepo.find({
+      where: { gameId },
+      relations: ['question'],
+      order: { order: 'ASC' },
+    });
+  }
 }
