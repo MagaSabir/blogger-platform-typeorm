@@ -38,6 +38,6 @@ export class QuestionRepository {
       .where('q.published = true')
       .orderBy('RANDOM()')
       .take(count)
-      .getRawMany();
+      .getMany();
   }
 }

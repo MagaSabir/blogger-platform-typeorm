@@ -25,7 +25,6 @@ export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
   async execute(command: AnswerCommand) {
     const game = await this.gameRepo.findActiveGameByUserId(command.userId);
     if (!game) throw new ForbiddenException();
-
     const player = game.getPlayerById(command.userId);
     const gameQuestion = await this.gameQuestionRepo.findQuestionByGameId(
       game.id,
@@ -51,6 +50,8 @@ export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
 
     game.processAnswer(player, isCorrect, answersCount + 1);
 
+    console.log(game);
     await this.gameRepo.save(game);
+    return answer.id;
   }
 }

@@ -102,9 +102,9 @@ describe('CREATE GAME', () => {
 
     game = await getGameQueryHandler.execute(new GetGameQuery(gameId));
 
+    console.log(game);
     expect(game?.status).toBe(GameStatus.ACTIVE);
     expect(game?.secondPlayerProgress?.player.id).toBe(userId2);
     expect(game?.questions).toHaveLength(5);
-    expect(game?.questions![0].body).toBe('question0');
   });
 });
