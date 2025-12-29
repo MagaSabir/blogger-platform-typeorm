@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -15,6 +16,7 @@ import { AnswerViewModel, GameViewModel } from './view-models/game-view-model';
 import { AnswerInputDto } from './admin/input-dto/answer.input-dto';
 import { AnswerCommand } from '../application/usecase/answer.usecase';
 import { GetAnswerQuery } from '../application/queries/get-answer.query';
+import { GetGamePairQuery } from '../application/queries/get-game-pair.query';
 
 @Controller('pair-game-quiz/pairs')
 @UseGuards(JwtAuthGuard)
@@ -43,5 +45,10 @@ export class QuizController {
       new AnswerCommand(userId, dto),
     );
     return await this.queryBus.execute(new GetAnswerQuery(answerId));
+  }
+
+  @Get('my-current')
+  async myCurrent(@CurrentUserId() userId: string) {
+    return this.queryBus.execute(new GetGamePairQuery(userId));
   }
 }

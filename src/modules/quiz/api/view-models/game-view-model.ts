@@ -46,10 +46,12 @@ export class GameViewModel {
   id: string;
   firstPlayerProgress: PlayerProgressViewModel | null;
   secondPlayerProgress: PlayerProgressViewModel | null;
-  questions: {
-    id: string;
-    body: string;
-  }[];
+  questions:
+    | {
+        id: string;
+        body: string;
+      }[]
+    | null;
   status: GameStatus;
   pairCreatedDate: Date;
   startGameDate: Date | null;

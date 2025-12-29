@@ -25,6 +25,7 @@ import { AnswerRepository } from './infrastructure/answer.repository';
 import { AnswerUseCase } from './application/usecase/answer.usecase';
 import { AnswerQueryRepository } from './infrastructure/query-repository/answer.query-repository';
 import { GetAnswerQueryHandler } from './application/queries/get-answer.query';
+import { GetGamePairQueryHandler } from './application/queries/get-game-pair.query';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { GetAnswerQueryHandler } from './application/queries/get-answer.query';
     AnswerRepository,
     AnswerQueryRepository,
     GetAnswerQueryHandler,
+    GetGamePairQueryHandler,
     AnswerUseCase,
   ],
 })
