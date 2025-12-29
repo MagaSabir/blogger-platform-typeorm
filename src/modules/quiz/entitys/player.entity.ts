@@ -26,8 +26,8 @@ export class Player {
   @JoinColumn({ name: 'gameId' })
   game: Game;
 
-  @Column()
-  public gameId: string;
+  // @Column()
+  // public gameId: string;
 
   @Column({ default: 0 })
   public score: number;
@@ -46,15 +46,15 @@ export class Player {
   }
 
   finish() {
-    if (this.finishedAt) return; // защита от повторного вызова
+    if (this.finishedAt) return;
     this.finishedAt = new Date();
   }
 
-  static create(userId: string, position: number, gameId: string) {
+  static create(userId: string, position: number, game: Game) {
     const player = new Player();
     player.userId = userId;
     player.position = position;
-    player.gameId = gameId;
+    player.game = game;
     player.answers = [];
     return player;
   }

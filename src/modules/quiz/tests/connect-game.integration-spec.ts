@@ -6,7 +6,7 @@ import {
   CreatePairConnectionCommand,
   CreatePairConnectionUseCase,
 } from '../application/usecase/create-pair-connection.usecase';
-import { GameStatus } from '../entitys/game.entity';
+import { Game, GameStatus } from '../entitys/game.entity';
 import {
   CreateUserCommand,
   CreateUserUseCase,
@@ -21,6 +21,16 @@ import {
 } from '../application/usecase/create-question.usecase';
 import { Question } from '../entitys/questions.entity';
 import { GameQuestion } from '../entitys/game-question.entity';
+import {
+  AnswerCommand,
+  AnswerUseCase,
+} from '../application/usecase/answer.usecase';
+import {
+  GetAnswerQuery,
+  GetAnswerQueryHandler,
+} from '../application/queries/get-answer.query';
+import { Player } from '../entitys/player.entity';
+import { randomUUID } from 'crypto';
 
 describe('CREATE GAME', () => {
   let app: INestApplication;
@@ -28,6 +38,8 @@ describe('CREATE GAME', () => {
   let createUserUseCase: CreateUserUseCase;
   let getGameQueryHandler: GetGameQueryHandler;
   let createQuestionUseCase: CreateQuestionUseCase;
+  let answerUseCase: AnswerUseCase;
+  let answerQuery: GetAnswerQueryHandler;
 
   let dataSource: DataSource;
 
@@ -44,6 +56,8 @@ describe('CREATE GAME', () => {
     getGameQueryHandler = app.get(GetGameQueryHandler);
     dataSource = app.get(DataSource);
     createQuestionUseCase = app.get(CreateQuestionUseCase);
+    answerUseCase = app.get(AnswerUseCase);
+    answerQuery = app.get(GetAnswerQueryHandler);
 
     await dataSource.query('TRUNCATE TABLE "Game" CASCADE');
     await dataSource.query('TRUNCATE TABLE "Player" CASCADE');
@@ -102,9 +116,35 @@ describe('CREATE GAME', () => {
 
     game = await getGameQueryHandler.execute(new GetGameQuery(gameId));
 
-    console.log(game);
     expect(game?.status).toBe(GameStatus.ACTIVE);
     expect(game?.secondPlayerProgress?.player.id).toBe(userId2);
     expect(game?.questions).toHaveLength(5);
+
+    const answerDto = { answer: 'answer1' };
+
+    const answerId = await answerUseCase.execute(
+      new AnswerCommand(userId, answerDto),
+    );
+    const result = await answerQuery.execute(new GetAnswerQuery(answerId));
+    console.log(result);
+    console.log(game?.questions.map((p) => p.id));
+    expect(game!.questions.map((q) => q.id)).toContain(result!.questionId);
+    expect(result!.answerStatus).toBe('Correct');
+  });
+
+  it('should not finish if player not finish', () => {
+    const id1 = randomUUID();
+    const id2 = randomUUID();
+
+    const game = Game.create();
+    const p1 = Player.create(id1, 1, game);
+    const p2 = Player.create(id2, 2, game);
+    p1.finish();
+
+    game.addPlayer(p1.userId);
+    game.addPlayer(p2.userId);
+    game.checkFinishCondition();
+
+    expect(game.status).not.toBe(GameStatus.FINISHED);
   });
 });

@@ -11,7 +11,7 @@ import { DomainException } from '../../../core/exceptions/domain.exceptions';
 import { DomainExceptionCodes } from '../../../core/exceptions/domain-exception-codes';
 
 export enum GameStatus {
-  PENDING = 'Pending',
+  PENDING = 'PendingSecondPlayer',
   ACTIVE = 'Active',
   FINISHED = 'Finished',
 }
@@ -53,7 +53,7 @@ export class Game {
 
     const position = this.players.length == 0 ? 1 : 2;
 
-    const player = Player.create(userId, position, this.id);
+    const player = Player.create(userId, position, this);
     this.players.push(player);
 
     if (position === 2) {
@@ -85,6 +85,8 @@ export class Game {
   }
 
   checkFinishCondition() {
+    if (!this.players || this.players.length < 2) return;
+
     const [p1, p2] = this.players;
 
     if (!p1.finishedAt || !p2.finishedAt) return;
@@ -97,7 +99,7 @@ export class Game {
           : null;
 
     if (faster && faster.score > 0) {
-      faster.incrementScore(); // бонус
+      faster.incrementScore();
     }
 
     this.status = GameStatus.FINISHED;

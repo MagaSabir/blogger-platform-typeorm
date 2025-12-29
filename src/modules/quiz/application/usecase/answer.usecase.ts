@@ -50,7 +50,6 @@ export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
 
     game.processAnswer(player, isCorrect, answersCount + 1);
 
-    console.log(game);
     await this.gameRepo.save(game);
     return answer.id;
   }

@@ -1,14 +1,15 @@
-import { CommandHandler, IQueryHandler } from '@nestjs/cqrs';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { AnswerQueryRepository } from '../../infrastructure/query-repository/answer.query-repository';
+import { AnswerViewModel } from '../../api/view-models/game-view-model';
 
 export class GetAnswerQuery {
   constructor(public answerId: string) {}
 }
-@CommandHandler(GetAnswerQuery)
+@QueryHandler(GetAnswerQuery)
 export class GetAnswerQueryHandler implements IQueryHandler<GetAnswerQuery> {
   constructor(private repo: AnswerQueryRepository) {}
 
-  async execute(query: GetAnswerQuery) {
+  async execute(query: GetAnswerQuery): Promise<AnswerViewModel | undefined> {
     return this.repo.getAnswer(query.answerId);
   }
 }

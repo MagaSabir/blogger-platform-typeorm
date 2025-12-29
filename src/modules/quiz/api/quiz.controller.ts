@@ -1,10 +1,17 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../../user-accounts/guards/bearer/jwt-auth.guard';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CurrentUserId } from '../../../core/decorators/current-user-id';
 import { CreatePairConnectionCommand } from '../application/usecase/create-pair-connection.usecase';
 import { GetGameQuery } from '../application/queries/get-game-query';
-import { GameViewModel } from './view-models/game-view-model';
+import { AnswerViewModel, GameViewModel } from './view-models/game-view-model';
 import { AnswerInputDto } from './admin/input-dto/answer.input-dto';
 import { AnswerCommand } from '../application/usecase/answer.usecase';
 import { GetAnswerQuery } from '../application/queries/get-answer.query';
@@ -18,6 +25,7 @@ export class QuizController {
   ) {}
 
   @Post('connection')
+  @HttpCode(HttpStatus.OK)
   async connect(@CurrentUserId() userId: string): Promise<GameViewModel> {
     const gameId: string = await this.commandBus.execute(
       new CreatePairConnectionCommand(userId),
@@ -26,7 +34,11 @@ export class QuizController {
   }
 
   @Post('my-current/answers')
-  async answers(@CurrentUserId() userId: string, @Body() dto: AnswerInputDto) {
+  @HttpCode(HttpStatus.OK)
+  async answers(
+    @CurrentUserId() userId: string,
+    @Body() dto: AnswerInputDto,
+  ): Promise<AnswerViewModel> {
     const answerId: string = await this.commandBus.execute(
       new AnswerCommand(userId, dto),
     );
