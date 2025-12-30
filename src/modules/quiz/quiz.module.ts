@@ -26,6 +26,7 @@ import { AnswerUseCase } from './application/usecase/answer.usecase';
 import { AnswerQueryRepository } from './infrastructure/query-repository/answer.query-repository';
 import { GetAnswerQueryHandler } from './application/queries/get-answer.query';
 import { GetGamePairQueryHandler } from './application/queries/get-game-pair.query';
+import { GetGameQueryByIdHandler } from './application/queries/get-game-by-id.query';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { GetGamePairQueryHandler } from './application/queries/get-game-pair.que
     AnswerQueryRepository,
     GetAnswerQueryHandler,
     GetGamePairQueryHandler,
+    GetGameQueryByIdHandler,
     AnswerUseCase,
   ],
 })

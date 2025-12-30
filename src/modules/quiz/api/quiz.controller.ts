@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -17,6 +18,8 @@ import { AnswerInputDto } from './admin/input-dto/answer.input-dto';
 import { AnswerCommand } from '../application/usecase/answer.usecase';
 import { GetAnswerQuery } from '../application/queries/get-answer.query';
 import { GetGamePairQuery } from '../application/queries/get-game-pair.query';
+import { GetGameByIdQuery } from '../application/queries/get-game-by-id.query';
+import { IdInputDto } from './admin/input-dto/id-input.dto';
 
 @Controller('pair-game-quiz/pairs')
 @UseGuards(JwtAuthGuard)
@@ -48,7 +51,15 @@ export class QuizController {
   }
 
   @Get('my-current')
-  async myCurrent(@CurrentUserId() userId: string) {
+  async myCurrent(@CurrentUserId() userId: string): Promise<GameViewModel> {
     return this.queryBus.execute(new GetGamePairQuery(userId));
+  }
+
+  @Get(':id')
+  async getGameById(
+    @Param() params: IdInputDto,
+    @CurrentUserId() userId: string,
+  ) {
+    return this.queryBus.execute(new GetGameByIdQuery(params.id, userId));
   }
 }
