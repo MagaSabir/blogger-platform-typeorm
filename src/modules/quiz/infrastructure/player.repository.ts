@@ -20,7 +20,6 @@ export class PlayerRepository {
           status: In([GameStatus.ACTIVE, GameStatus.PENDING]),
         },
       },
-      relations: ['game'],
     });
     return count > 0;
   }

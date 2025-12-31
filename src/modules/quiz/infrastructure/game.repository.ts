@@ -25,9 +25,7 @@ export class GameRepository {
       .createQueryBuilder('g')
       .innerJoinAndSelect('g.players', 'player')
       .where('player.userId =:userId', { userId })
-      .andWhere('g.status IN (:...statuses)', {
-        statuses: [GameStatus.ACTIVE, GameStatus.PENDING],
-      })
+      .andWhere('g.status =:status', { status: GameStatus.ACTIVE })
       .getOne();
   }
 }
