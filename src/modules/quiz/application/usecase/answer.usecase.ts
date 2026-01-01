@@ -5,7 +5,6 @@ import { ForbiddenException } from '@nestjs/common';
 import { GameQuestionRepository } from '../../infrastructure/game-question.repository';
 import { AnswerRepository } from '../../infrastructure/answer.repository';
 import { Answer } from '../../entitys/answer.entity';
-import { GameStatus } from '../../entitys/game.entity';
 
 export class AnswerCommand {
   constructor(
