@@ -5,7 +5,6 @@ import {
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 import { GameQuestion } from './game-question.entity';
 import { DomainException } from '../../../core/exceptions/domain.exceptions';

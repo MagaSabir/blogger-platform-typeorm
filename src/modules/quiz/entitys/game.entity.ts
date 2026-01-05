@@ -23,10 +23,10 @@ export class Game {
   @Column({ type: 'enum', enum: GameStatus, default: GameStatus.PENDING })
   public status: GameStatus;
 
-  @OneToMany(() => Player, (player) => player.game, { cascade: true })
+  @OneToMany(() => Player, (player) => player.game)
   players: Player[];
 
-  @OneToMany(() => GameQuestion, (gq) => gq.game, { cascade: true })
+  @OneToMany(() => GameQuestion, (gq) => gq.game)
   public questions: GameQuestion[];
 
   @CreateDateColumn()
@@ -43,24 +43,24 @@ export class Game {
     this.startGameDate = new Date();
   }
 
-  addPlayer(userId: string) {
-    if (this.players.length >= 2) {
-      throw new DomainException({
-        code: DomainExceptionCodes.BadRequest,
-        message: 'Already thwo players',
-      });
-    }
-
-    const position = this.players.length == 0 ? 1 : 2;
-
-    const player = Player.create(userId, position, this);
-    this.players.push(player);
-
-    if (position === 2) {
-      this.start();
-    }
-    return player;
-  }
+  // addPlayer(userId: string) {
+  //   if (this.players.length >= 2) {
+  //     throw new DomainException({
+  //       code: DomainExceptionCodes.BadRequest,
+  //       message: 'Already thwo players',
+  //     });
+  //   }
+  //
+  //   const position = this.players.length == 0 ? 1 : 2;
+  //
+  //   const player = Player.create(userId, position, this.id);
+  //   this.players.push(player);
+  //
+  //   if (position === 2) {
+  //     this.start();
+  //   }
+  //   return player;
+  // }
 
   getPlayerById(userId: string) {
     const player = this.players.find((p) => p.userId === userId);

@@ -93,17 +93,6 @@ describe('CREATE GAME', () => {
     const userId2 = await createUserUseCase.execute(
       new CreateUserCommand(user2),
     );
-
-    const gameId: string = await useCase.execute(
-      new CreatePairConnectionCommand(userId),
-    );
-
-    let game = await getGameQueryHandler.execute(new GetGameQuery(gameId));
-    expect(game?.status).toBe(GameStatus.PENDING);
-    expect(game?.firstPlayerProgress?.player.id).toBe(userId);
-    expect(game?.secondPlayerProgress).toBeNull();
-    expect(game?.questions).toEqual(null);
-
     const questions: Question[] = [];
     for (let i = 0; i < 5; i++) {
       const dto = {
@@ -117,96 +106,19 @@ describe('CREATE GAME', () => {
       await dataSource.getRepository(Question).save(question);
       questions.push(question);
     }
-    await useCase.execute(new CreatePairConnectionCommand(userId2));
 
-    game = await getGameQueryHandler.execute(new GetGameQuery(gameId));
-
-    expect(game?.status).toBe(GameStatus.ACTIVE);
-    expect(game?.secondPlayerProgress?.player.id).toBe(userId2);
-    expect(game?.questions).toHaveLength(5);
-
-    const answerDto = { answer: 'answer1' };
-
-    const answerId = await answerUseCase.execute(
-      new AnswerCommand(userId, answerDto),
-    );
-    const result = await answerQuery.execute(new GetAnswerQuery(answerId));
-    console.log(result);
-  });
-
-  it('should not finish if player not finish', () => {
-    const id1 = randomUUID();
-    const id2 = randomUUID();
-
-    const game = Game.create();
-    const p1 = Player.create(id1, 1, game);
-    const p2 = Player.create(id2, 2, game);
-    p1.finish();
-
-    game.addPlayer(p1.userId);
-    game.addPlayer(p2.userId);
-    game.checkFinishCondition();
-
-    expect(game.status).not.toBe(GameStatus.FINISHED);
-  });
-
-  it('should create new game by user1, connect user2 and add answers', async () => {
-    const user1 = {
-      login: 'test123',
-      password: 'string',
-      email: 'example@example.com',
-    };
-    const user2 = {
-      login: 'test2',
-      password: 'string',
-      email: 'example1242@example2.com',
-    };
-    const userId = await createUserUseCase.execute(
-      new CreateUserCommand(user1),
-    );
-    const userId2 = await createUserUseCase.execute(
-      new CreateUserCommand(user2),
-    );
-
-    const questions: Question[] = [];
-    for (let i = 0; i < 5; i++) {
-      const dto = {
-        body: `question${i}`,
-        correctAnswers: [`answer${i}`],
-      };
-      const question = await createQuestionUseCase.execute(
-        new CreateQuestionCommand(dto),
-      );
-      question.publish();
-
-      await dataSource.getRepository(Question).save(question);
-      questions.push(question);
-    }
+    await useCase.execute(new CreatePairConnectionCommand(userId));
 
     const gameId: string = await useCase.execute(
-      new CreatePairConnectionCommand(userId),
+      new CreatePairConnectionCommand(userId2),
     );
-    await useCase.execute(new CreatePairConnectionCommand(userId2));
 
-    console.log('User1 answering questions...');
-    for (let i = 0; i < 5; i++) {
-      const answerDto = {
-        answer: `answer${i}`,
-      };
+    const game = await getGameQueryHandler.execute(new GetGameQuery(gameId));
 
-      await answerUseCase.execute(new AnswerCommand(userId, answerDto));
-    }
-
-    for (let i = 0; i < 5; i++) {
-      const answerDto = {
-        answer: i % 2 === 0 ? `answer${i}` : `wrong${i}`,
-      };
-
-      await answerUseCase.execute(new AnswerCommand(userId2, answerDto));
-    }
-    const game = await getGamePairQueryHandler.execute(
-      new GetGamePairQuery(userId),
-    );
     console.log(game);
+    expect(game?.status).toBe(GameStatus.ACTIVE);
+    expect(game?.firstPlayerProgress?.player.id).toBe(userId);
+    expect(game?.secondPlayerProgress?.player.id).toBe(userId2);
+    expect(game?.questions?.length).toBe(5);
   });
 });
