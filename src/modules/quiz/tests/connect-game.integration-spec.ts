@@ -62,15 +62,15 @@ describe('CREATE GAME', () => {
     answerUseCase = app.get(AnswerUseCase);
     answerQuery = app.get(GetAnswerQueryHandler);
     getGamePairQueryHandler = app.get(GetGamePairQueryHandler);
-  });
 
-  afterEach(async () => {
     await dataSource.query('TRUNCATE TABLE "Game" CASCADE');
     await dataSource.query('TRUNCATE TABLE "Player" CASCADE');
     await dataSource.query('TRUNCATE TABLE "GameQuestion" CASCADE');
     await dataSource.query('TRUNCATE TABLE "Question" CASCADE');
     await dataSource.query('TRUNCATE TABLE "Users" CASCADE');
   });
+
+  afterEach(async () => {});
   afterAll(async () => {
     await app.close();
   });
@@ -116,7 +116,7 @@ describe('CREATE GAME', () => {
 
     const gameAfterUser1 = await dataSource.getRepository(Game).findOne({
       where: { id: gameId },
-      relations: ['players'],
+      relations: ['players', 'players.answers'],
     });
     console.log('Game after User1:', {
       id: gameAfterUser1?.id,
@@ -124,16 +124,15 @@ describe('CREATE GAME', () => {
       players: gameAfterUser1?.players.map((p) => ({
         userId: p.userId,
         position: p.position,
+        answers: p.answers,
       })),
     });
     console.log('User1 answering questions...');
     for (let i = 0; i < 5; i++) {
-      // User1 отвечает на вопрос i
       const answerDto1 = { answer: `answer${i}` };
 
       await answerUseCase.execute(new AnswerCommand(userId, answerDto1));
 
-      // User2 отвечает на тот же вопрос i
       const answerDto2 = {
         answer: i % 2 === 0 ? `answer${i}` : `wrong${i}`,
       };

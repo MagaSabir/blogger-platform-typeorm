@@ -74,40 +74,25 @@ export class Game {
   }
 
   processAnswer(player: Player, isCorrect: boolean, answersCount: number) {
-    console.log(
-      `Game.processAnswer: player=${player.userId}, correct=${isCorrect}, count=${answersCount}`,
-    );
-
     if (isCorrect) {
       player.incrementScore();
     }
-
     if (answersCount === 5) {
-      console.log(`Player ${player.userId} answered all 5 questions`);
       player.finish();
       this.checkFinishCondition();
     }
   }
 
   checkFinishCondition() {
-    console.log('Game.checkFinishCondition called');
-
     if (!this.players || this.players.length < 2) {
-      console.log('Not enough players');
       return;
     }
 
     const [p1, p2] = this.players;
 
-    console.log(`Player1: finishedAt=${p1.finishedAt}, score=${p1.score}`);
-    console.log(`Player2: finishedAt=${p2.finishedAt}, score=${p2.score}`);
-
     if (!p1.finishedAt || !p2.finishedAt) {
-      console.log('Not all players finished yet');
       return;
     }
-
-    console.log('Both players finished! Finishing game...');
 
     // Определяем, кто закончил быстрее
     const faster =
@@ -118,13 +103,12 @@ export class Game {
           : null;
 
     if (faster && faster.score > 0) {
-      console.log(`Bonus point for ${faster.userId} for finishing faster`);
       faster.incrementScore();
     }
 
     this.status = GameStatus.FINISHED;
+    console.log(this.status);
     this.finishGameDate = new Date();
-    console.log(`Game ${this.id} finished at ${this.finishGameDate}`);
   }
 
   static create() {

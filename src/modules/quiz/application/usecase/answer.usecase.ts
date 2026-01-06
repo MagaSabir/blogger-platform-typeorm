@@ -1,11 +1,8 @@
 import { AnswerInputDto } from '../../api/admin/input-dto/answer.input-dto';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { GameRepository } from '../../infrastructure/game.repository';
 import { ForbiddenException } from '@nestjs/common';
-import { GameQuestionRepository } from '../../infrastructure/game-question.repository';
-import { AnswerRepository } from '../../infrastructure/answer.repository';
 import { Answer } from '../../entitys/answer.entity';
-import { EntityManager, IsNull } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { GameQuestion } from '../../entitys/game-question.entity';
 import { Game, GameStatus } from '../../entitys/game.entity';
 import { Player } from '../../entitys/player.entity';
@@ -50,16 +47,14 @@ export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
       if (!game) throw new ForbiddenException('No active game');
 
       const player = game.getPlayerById(command.userId);
+      const otherPlayer = game.players.find((p) => p.userId !== command.userId);
 
-      // const gameQuestion = await this.gameQuestionRepo.findQuestionByGameId(
-      //   game.id,
-      // );
       const gameQuestion = await gameQuestionRepo.find({
         where: { gameId: game.id },
         relations: ['question'],
         order: { order: 'ASC' },
       });
-      // const answersCount = await this.answerRepo.countByPlayerId(player.id);
+
       const answersCount = await answerRepo.count({
         where: { playerId: player.id },
       });
@@ -81,22 +76,21 @@ export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
 
       await answerRepo.save(answer);
 
-      console.log(answersCount);
-      game.processAnswer(player, isCorrect, answersCount + 1);
-      await gameRepo.save(player);
-
+      // game.processAnswer(player, isCorrect, answersCount + 1);
+      const currentAnswerNumber = answersCount + 1;
+      if (isCorrect) {
+        player.score += 1;
+      }
+      if (currentAnswerNumber === 5) {
+        player.finishedAt = new Date();
+      }
+      if (otherPlayer && otherPlayer.finishedAt) {
+        game.status = GameStatus.FINISHED;
+        game.finishGameDate = new Date();
+      }
+      console.log(player);
+      await playerRepo.save(player);
       await gameRepo.save(game);
-      console.log('Game after answer:', {
-        id: game.id,
-        status: game.status,
-        finishGameDate: game.finishGameDate,
-        players: game.players.map((p) => ({
-          userId: p.userId,
-          score: p.score,
-          finishedAt: p.finishedAt,
-          // isWinner: p.isWinner, нет такого поля
-        })),
-      });
 
       return answer.id;
     });
