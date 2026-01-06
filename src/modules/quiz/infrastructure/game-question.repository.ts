@@ -8,15 +8,15 @@ import { GameQuestion } from '../entitys/game-question.entity';
 export class GameQuestionRepository {
   constructor(
     @InjectRepository(GameQuestion)
-    private questionRepo: Repository<GameQuestion>,
+    private gameQuestionRepo: Repository<GameQuestion>,
   ) {}
 
   async save(question: GameQuestion[]) {
-    await this.questionRepo.save(question);
+    await this.gameQuestionRepo.save(question);
   }
 
   async findQuestionByGameId(gameId: string) {
-    return this.questionRepo.find({
+    return this.gameQuestionRepo.find({
       where: { gameId },
       relations: ['question'],
       order: { order: 'ASC' },

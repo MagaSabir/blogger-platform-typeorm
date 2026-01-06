@@ -51,7 +51,9 @@ export class CreatePairConnectionUseCase
     game.players.push(player);
 
     if (position === 2) {
-      game.start();
+      // game.start();
+      game.status = GameStatus.ACTIVE; // ← явно меняем статус
+      game.startGameDate = new Date();
       await this.gameRepo.save(game);
 
       const questions = await this.questionRepo.getRandomQuestions(5);

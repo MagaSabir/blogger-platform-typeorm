@@ -23,8 +23,11 @@ export class GameRepository {
   async findActiveGameByUserId(userId: string) {
     return this.repo
       .createQueryBuilder('g')
-      .innerJoinAndSelect('g.players', 'player')
-      .where('player.userId =:userId', { userId })
+      .innerJoinAndSelect('g.players', 'players')
+      .where(
+        'g.id IN (SELECT p."gameId" FROM "Player" p WHERE p."userId" =:userId)',
+        { userId },
+      )
       .andWhere('g.status =:status', { status: GameStatus.ACTIVE })
       .getOne();
   }

@@ -93,6 +93,7 @@ describe('CREATE GAME', () => {
     const userId2 = await createUserUseCase.execute(
       new CreateUserCommand(user2),
     );
+
     const questions: Question[] = [];
     for (let i = 0; i < 5; i++) {
       const dto = {
@@ -113,10 +114,36 @@ describe('CREATE GAME', () => {
       new CreatePairConnectionCommand(userId2),
     );
 
+    const gameAfterUser1 = await dataSource.getRepository(Game).findOne({
+      where: { id: gameId },
+      relations: ['players'],
+    });
+    console.log('Game after User1:', {
+      id: gameAfterUser1?.id,
+      status: gameAfterUser1?.status,
+      players: gameAfterUser1?.players.map((p) => ({
+        userId: p.userId,
+        position: p.position,
+      })),
+    });
+    console.log('User1 answering questions...');
+    for (let i = 0; i < 5; i++) {
+      // User1 отвечает на вопрос i
+      const answerDto1 = { answer: `answer${i}` };
+
+      await answerUseCase.execute(new AnswerCommand(userId, answerDto1));
+
+      // User2 отвечает на тот же вопрос i
+      const answerDto2 = {
+        answer: i % 2 === 0 ? `answer${i}` : `wrong${i}`,
+      };
+
+      await answerUseCase.execute(new AnswerCommand(userId2, answerDto2));
+    }
+
     const game = await getGameQueryHandler.execute(new GetGameQuery(gameId));
 
-    console.log(game);
-    expect(game?.status).toBe(GameStatus.ACTIVE);
+    expect(game?.status).toBe(GameStatus.FINISHED);
     expect(game?.firstPlayerProgress?.player.id).toBe(userId);
     expect(game?.secondPlayerProgress?.player.id).toBe(userId2);
     expect(game?.questions?.length).toBe(5);

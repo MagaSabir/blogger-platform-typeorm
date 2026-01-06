@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -15,6 +16,7 @@ export enum AnswerStatus {
 }
 
 @Entity('Answers')
+@Index(['playerId', 'questionId'], { unique: true })
 export class Answer {
   @PrimaryGeneratedColumn('uuid')
   public id: string;
