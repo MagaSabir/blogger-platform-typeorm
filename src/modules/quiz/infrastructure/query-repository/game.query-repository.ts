@@ -114,7 +114,6 @@ export class GameQueryRepository {
     const game: RawGameData | undefined = await this.dataSource
       .getRepository(Game)
       .createQueryBuilder('g')
-      .innerJoinAndSelect('g.players', 'player')
       .select([
         'g.id as id',
         'g.status as status',
@@ -122,7 +121,14 @@ export class GameQueryRepository {
         'g.startGameDate as "startGameDate"',
         'g.finishGameDate as "finishGameDate"',
       ])
-      .where('player.userId =:userId', { userId })
+      .where(
+        `EXISTS (
+      SELECT 1 FROM "Player" p
+      WHERE p."gameId" = g.id
+      AND p."userId" = :userId
+    )`,
+        { userId },
+      )
       .andWhere('g.status IN (:...statuses)', {
         statuses: [GameStatus.ACTIVE, GameStatus.PENDING],
       })
@@ -218,9 +224,9 @@ export class GameQueryRepository {
         'g.finishGameDate as "finishGameDate"',
       ])
       .where('g.id =:gameId', { gameId })
-      .andWhere('g.status IN (:...statuses)', {
-        statuses: [GameStatus.ACTIVE, GameStatus.PENDING],
-      })
+      // .andWhere('g.status IN (:...statuses)', {
+      //   statuses: [GameStatus.ACTIVE, GameStatus.PENDING],
+      // })
       .getRawOne();
 
     if (!game) {

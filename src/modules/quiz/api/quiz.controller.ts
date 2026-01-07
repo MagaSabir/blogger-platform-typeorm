@@ -59,7 +59,7 @@ export class QuizController {
   async getGameById(
     @Param() params: IdInputDto,
     @CurrentUserId() userId: string,
-  ) {
+  ): Promise<GameViewModel> {
     return this.queryBus.execute(new GetGameByIdQuery(params.id, userId));
   }
 }

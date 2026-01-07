@@ -88,7 +88,6 @@ export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
         game.status = GameStatus.FINISHED;
         game.finishGameDate = new Date();
       }
-      console.log(player);
       await playerRepo.save(player);
       await gameRepo.save(game);
 

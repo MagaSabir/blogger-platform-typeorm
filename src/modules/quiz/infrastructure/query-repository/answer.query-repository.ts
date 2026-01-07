@@ -12,9 +12,9 @@ export class AnswerQueryRepository {
     return this.repo
       .createQueryBuilder('a')
       .select([
-        'a.questionId as questionId',
-        'a.status as answerStatus',
-        'a.addedAt as addedAt',
+        'a.questionId as "questionId"',
+        'a.status as "answerStatus"',
+        'a.addedAt as "addedAt"',
       ])
       .where('a.id =:answerId', { answerId })
       .getRawOne();
