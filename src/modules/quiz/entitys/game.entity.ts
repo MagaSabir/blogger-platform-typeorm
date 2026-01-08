@@ -107,7 +107,6 @@ export class Game {
     }
 
     this.status = GameStatus.FINISHED;
-    console.log(this.status);
     this.finishGameDate = new Date();
   }
 

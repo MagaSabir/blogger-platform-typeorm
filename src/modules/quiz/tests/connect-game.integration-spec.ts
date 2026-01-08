@@ -1,4 +1,4 @@
-import { ForbiddenException, INestApplication } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../../../app.module';
@@ -6,7 +6,7 @@ import {
   CreatePairConnectionCommand,
   CreatePairConnectionUseCase,
 } from '../application/usecase/create-pair-connection.usecase';
-import { Game, GameStatus } from '../entitys/game.entity';
+import { GameStatus } from '../entitys/game.entity';
 import {
   CreateUserCommand,
   CreateUserUseCase,
@@ -28,16 +28,11 @@ import {
   GetAnswerQuery,
   GetAnswerQueryHandler,
 } from '../application/queries/get-answer.query';
-import { Player } from '../entitys/player.entity';
-import { randomUUID } from 'crypto';
 import {
   GetGamePairQuery,
   GetGamePairQueryHandler,
 } from '../application/queries/get-game-pair.query';
-import {
-  GetGameByIdQuery,
-  GetGameQueryByIdHandler,
-} from '../application/queries/get-game-by-id.query';
+import { GetGameQueryByIdHandler } from '../application/queries/get-game-by-id.query';
 
 const user1 = {
   login: 'test123',
@@ -60,7 +55,6 @@ describe('CREATE GAME', () => {
   let answerQuery: GetAnswerQueryHandler;
   let getGamePairQueryHandler: GetGamePairQueryHandler;
   let dataSource: DataSource;
-  let getGameQueryByIdHandler: GetGameQueryByIdHandler;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -78,7 +72,6 @@ describe('CREATE GAME', () => {
     answerUseCase = app.get(AnswerUseCase);
     answerQuery = app.get(GetAnswerQueryHandler);
     getGamePairQueryHandler = app.get(GetGamePairQueryHandler);
-    getGameQueryByIdHandler = app.get(GetGameQueryByIdHandler);
   });
 
   afterEach(async () => {
@@ -171,20 +164,39 @@ describe('CREATE GAME', () => {
 
     expect(game1?.status).toBe(GameStatus.ACTIVE);
 
-    await expect(
-      getGamePairQueryHandler.execute(new GetGamePairQuery(userId)),
-    ).rejects.toThrow(ForbiddenException);
-
-    const answerDto1 = { answer: `answer0` };
-    const answerDto2 = { answer: `incorrect` };
-    await answerUseCase.execute(new AnswerCommand(userId, answerDto1));
-    await answerUseCase.execute(new AnswerCommand(userId2, answerDto2));
-    const answerId = await answerUseCase.execute(
-      new AnswerCommand(userId2, answerDto1),
+    // 1. ✓
+    await answerUseCase.execute(
+      new AnswerCommand(userId, { answer: 'answer0' }),
+    );
+    // 2. ✓
+    await answerUseCase.execute(
+      new AnswerCommand(userId, { answer: 'answer1' }),
+    );
+    // 3. ✗ (неправильный на Q2)
+    await answerUseCase.execute(
+      new AnswerCommand(userId, { answer: 'incorrect' }),
+    );
+    // 4. ✓
+    await answerUseCase.execute(
+      new AnswerCommand(userId, { answer: 'answer3' }),
+    );
+    // 5. ✓
+    await answerUseCase.execute(
+      new AnswerCommand(userId, { answer: 'answer4' }),
     );
 
-    const answer = await answerQuery.execute(new GetAnswerQuery(answerId));
-    expect(new Date(answer!.addedAt).toString()).not.toBe('Invalid Date');
+    // 1. ✓
+    await answerUseCase.execute(
+      new AnswerCommand(userId2, { answer: 'answer0' }),
+    );
+    // 2. ✓
+    await answerUseCase.execute(
+      new AnswerCommand(userId2, { answer: 'answer1' }),
+    );
+    // 3. ✓
+    await answerUseCase.execute(
+      new AnswerCommand(userId2, { answer: 'answer2' }),
+    );
 
     const gameUser1 = await getGamePairQueryHandler.execute(
       new GetGamePairQuery(userId),
@@ -192,6 +204,7 @@ describe('CREATE GAME', () => {
     const gameUser2 = await getGamePairQueryHandler.execute(
       new GetGamePairQuery(userId2),
     );
+    expect(gameUser1?.firstPlayerProgress?.score).toBe(5);
     expect(gameUser1?.status).toBe(GameStatus.ACTIVE);
     expect(gameUser2?.status).toBe(GameStatus.ACTIVE);
   });

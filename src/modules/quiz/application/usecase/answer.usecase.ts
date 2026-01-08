@@ -76,19 +76,33 @@ export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
 
       await answerRepo.save(answer);
 
-      // game.processAnswer(player, isCorrect, answersCount + 1);
+      //game.processAnswer(player, isCorrect, answersCount + 1);
       const currentAnswerNumber = answersCount + 1;
       if (isCorrect) {
         player.score += 1;
       }
+
       if (currentAnswerNumber === 5) {
-        player.finishedAt = new Date();
+        player.finish();
+
+        if (otherPlayer && otherPlayer.finishedAt && player.finishedAt) {
+          if (player.finishedAt < otherPlayer.finishedAt && player.score > 0) {
+            player.score += 1; // бонус
+          } else if (
+            otherPlayer.finishedAt < player.finishedAt &&
+            otherPlayer.score > 0
+          ) {
+            otherPlayer.score += 1;
+          }
+          game.status = GameStatus.FINISHED;
+          game.finishGameDate = new Date();
+        }
       }
-      if (otherPlayer && otherPlayer.finishedAt) {
-        game.status = GameStatus.FINISHED;
-        game.finishGameDate = new Date();
-      }
+
       await playerRepo.save(player);
+      if (otherPlayer) {
+        await playerRepo.save(otherPlayer);
+      }
       await gameRepo.save(game);
 
       return answer.id;
