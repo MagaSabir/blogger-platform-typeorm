@@ -74,6 +74,8 @@ export class GameQueryRepository {
       .where('a.playerId IN (:...playerIds)', {
         playerIds: players.map((p) => p.playerId),
       })
+      .orderBy('a.addedAt', 'ASC')
+
       .getRawMany();
 
     const mapPlayer = (position: 1 | 2) => {
@@ -174,6 +176,7 @@ export class GameQueryRepository {
       .where('a.playerId IN (:...playerIds)', {
         playerIds: players.map((p) => p.playerId),
       })
+      .orderBy('a.addedAt', 'ASC')
       .getRawMany();
 
     const mapPlayer = (position: 1 | 2) => {
@@ -275,6 +278,8 @@ export class GameQueryRepository {
       .where('a.playerId IN (:...playerIds)', {
         playerIds: players.map((p) => p.playerId),
       })
+      .orderBy('a.addedAt', 'ASC')
+
       .getRawMany();
 
     const mapPlayer = (position: 1 | 2) => {

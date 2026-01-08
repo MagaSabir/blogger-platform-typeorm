@@ -1,10 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { GameRepository } from '../../infrastructure/game.repository';
 import { Game, GameStatus } from '../../entitys/game.entity';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
-import { PlayerRepository } from '../../infrastructure/player.repository';
 import { GameQuestion } from '../../entitys/game-question.entity';
-import { GameQuestionRepository } from '../../infrastructure/game-question.repository';
 import { QuestionRepository } from '../../infrastructure/question.repository';
 import { Player } from '../../entitys/player.entity';
 import { EntityManager } from 'typeorm';
@@ -18,9 +15,6 @@ export class CreatePairConnectionUseCase
   implements ICommandHandler<CreatePairConnectionCommand>
 {
   constructor(
-    // private gameRepo: GameRepository,
-    // private playerRepo: PlayerRepository,
-    // private gameQuestionRepo: GameQuestionRepository,
     private questionRepo: QuestionRepository,
     private entityManager: EntityManager,
   ) {}
@@ -31,44 +25,41 @@ export class CreatePairConnectionUseCase
       const playerRepo = manager.getRepository(Player);
       const gameQuestionRepo = manager.getRepository(GameQuestion);
 
-      const hasGame = await playerRepo
+      const existingGame = await playerRepo
         .createQueryBuilder('p')
         .innerJoin('p.game', 'g')
         .where('p.userId = :userId', { userId: command.userId })
         .andWhere('g.status IN (:...statuses)', {
           statuses: [GameStatus.PENDING, GameStatus.ACTIVE],
         })
-        .getCount();
+        .getOne();
 
-      if (hasGame > 0) {
+      if (existingGame) {
         throw new ForbiddenException('Already in game');
       }
 
       let game = await gameRepo
         .createQueryBuilder('g')
-        .innerJoinAndSelect('g.players', 'players')
-        .setLock('pessimistic_write')
         .where('g.status =:status', { status: GameStatus.PENDING })
+        .setLock('pessimistic_write')
         .getOne();
 
       if (!game) {
         game = Game.create();
         await gameRepo.save(game);
       }
-      if (game.players.some((p) => p.userId === command.userId)) {
-        throw new ForbiddenException('Already in this game');
-      }
+      const playerCounts = await playerRepo.count({
+        where: { gameId: game.id },
+      });
 
-      if (game.players.length >= 2) {
+      if (playerCounts >= 2) {
         throw new ForbiddenException('Already 2 players');
       }
 
-      const position = game.players.length === 0 ? 1 : 2;
+      const position: 1 | 2 = playerCounts === 0 ? 1 : 2;
 
       const player = Player.create(command.userId, position, game.id);
       await playerRepo.save(player);
-
-      game.players.push(player);
 
       if (position === 2) {
         // game.start();
@@ -78,7 +69,7 @@ export class CreatePairConnectionUseCase
 
         const questions = await this.questionRepo.getRandomQuestions(5);
         if (questions.length < 5) {
-          throw new BadRequestException('Questions must be 5 <=');
+          throw new BadRequestException('Questions must be >= 5');
         }
 
         const gameQuestions = questions.map((q, i) =>
@@ -86,8 +77,6 @@ export class CreatePairConnectionUseCase
         );
 
         await gameQuestionRepo.save(gameQuestions);
-      } else {
-        await gameRepo.save(game);
       }
 
       return game.id;

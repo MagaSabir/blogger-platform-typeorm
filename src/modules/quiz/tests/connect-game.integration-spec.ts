@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { ForbiddenException, INestApplication } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../../../app.module';
@@ -170,6 +170,10 @@ describe('CREATE GAME', () => {
     );
 
     expect(game1?.status).toBe(GameStatus.ACTIVE);
+
+    await expect(
+      getGamePairQueryHandler.execute(new GetGamePairQuery(userId)),
+    ).rejects.toThrow(ForbiddenException);
 
     const answerDto1 = { answer: `answer0` };
     const answerDto2 = { answer: `incorrect` };
