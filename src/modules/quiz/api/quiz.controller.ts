@@ -20,6 +20,7 @@ import { GetAnswerQuery } from '../application/queries/get-answer.query';
 import { GetGamePairQuery } from '../application/queries/get-game-pair.query';
 import { GetGameByIdQuery } from '../application/queries/get-game-by-id.query';
 import { IdInputDto } from './admin/input-dto/id-input.dto';
+import { GetMyGamesQuery } from '../application/queries/get-my-games.query';
 
 @Controller('pair-game-quiz/pairs')
 @UseGuards(JwtAuthGuard)
@@ -61,5 +62,10 @@ export class QuizController {
     @CurrentUserId() userId: string,
   ): Promise<GameViewModel> {
     return this.queryBus.execute(new GetGameByIdQuery(params.id, userId));
+  }
+
+  @Get('my')
+  async getMyGames(@CurrentUserId() userId: string): Promise<GameViewModel> {
+    return this.queryBus.execute(new GetMyGamesQuery(userId));
   }
 }

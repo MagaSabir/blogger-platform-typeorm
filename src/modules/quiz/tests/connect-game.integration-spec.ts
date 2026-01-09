@@ -25,14 +25,18 @@ import {
   AnswerUseCase,
 } from '../application/usecase/answer.usecase';
 import {
-  GetAnswerQuery,
-  GetAnswerQueryHandler,
-} from '../application/queries/get-answer.query';
-import {
   GetGamePairQuery,
   GetGamePairQueryHandler,
 } from '../application/queries/get-game-pair.query';
-import { GetGameQueryByIdHandler } from '../application/queries/get-game-by-id.query';
+import {
+  GetGameByIdQuery,
+  GetGameQueryByIdHandler,
+} from '../application/queries/get-game-by-id.query';
+import {
+  GetStatisticQuery,
+  GetStatisticQueryHandler,
+} from '../application/queries/get-statistic.query';
+import { StatisticViewModel } from '../api/view-models/statistic.view-model';
 
 const user1 = {
   login: 'test123',
@@ -50,11 +54,12 @@ describe('CREATE GAME', () => {
   let useCase: CreatePairConnectionUseCase;
   let createUserUseCase: CreateUserUseCase;
   let getGameQueryHandler: GetGameQueryHandler;
+  let getGameByIdQueryHandler: GetGameQueryByIdHandler;
   let createQuestionUseCase: CreateQuestionUseCase;
   let answerUseCase: AnswerUseCase;
-  let answerQuery: GetAnswerQueryHandler;
   let getGamePairQueryHandler: GetGamePairQueryHandler;
   let dataSource: DataSource;
+  let getStatistic: GetStatisticQueryHandler;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -70,8 +75,9 @@ describe('CREATE GAME', () => {
     dataSource = app.get(DataSource);
     createQuestionUseCase = app.get(CreateQuestionUseCase);
     answerUseCase = app.get(AnswerUseCase);
-    answerQuery = app.get(GetAnswerQueryHandler);
     getGamePairQueryHandler = app.get(GetGamePairQueryHandler);
+    getStatistic = app.get(GetStatisticQueryHandler);
+    getGameByIdQueryHandler = app.get(GetGameQueryByIdHandler);
   });
 
   afterEach(async () => {
@@ -80,6 +86,7 @@ describe('CREATE GAME', () => {
     await dataSource.query('TRUNCATE TABLE "GameQuestion" CASCADE');
     await dataSource.query('TRUNCATE TABLE "Question" CASCADE');
     await dataSource.query('TRUNCATE TABLE "Users" CASCADE');
+    await dataSource.query('TRUNCATE TABLE "Answers" CASCADE');
   });
   afterAll(async () => {
     await app.close();
@@ -155,9 +162,7 @@ describe('CREATE GAME', () => {
     }
 
     await useCase.execute(new CreatePairConnectionCommand(userId));
-    const gameId = await useCase.execute(
-      new CreatePairConnectionCommand(userId2),
-    );
+    await useCase.execute(new CreatePairConnectionCommand(userId2));
     const game1 = await getGamePairQueryHandler.execute(
       new GetGamePairQuery(userId),
     );
@@ -172,31 +177,6 @@ describe('CREATE GAME', () => {
     await answerUseCase.execute(
       new AnswerCommand(userId, { answer: 'answer1' }),
     );
-    // 3. ✗ (неправильный на Q2)
-    await answerUseCase.execute(
-      new AnswerCommand(userId, { answer: 'incorrect' }),
-    );
-    // 4. ✓
-    await answerUseCase.execute(
-      new AnswerCommand(userId, { answer: 'answer3' }),
-    );
-    // 5. ✓
-    await answerUseCase.execute(
-      new AnswerCommand(userId, { answer: 'answer4' }),
-    );
-
-    // 1. ✓
-    await answerUseCase.execute(
-      new AnswerCommand(userId2, { answer: 'answer0' }),
-    );
-    // 2. ✓
-    await answerUseCase.execute(
-      new AnswerCommand(userId2, { answer: 'answer1' }),
-    );
-    // 3. ✓
-    await answerUseCase.execute(
-      new AnswerCommand(userId2, { answer: 'answer2' }),
-    );
 
     const gameUser1 = await getGamePairQueryHandler.execute(
       new GetGamePairQuery(userId),
@@ -204,8 +184,105 @@ describe('CREATE GAME', () => {
     const gameUser2 = await getGamePairQueryHandler.execute(
       new GetGamePairQuery(userId2),
     );
-    expect(gameUser1?.firstPlayerProgress?.score).toBe(5);
     expect(gameUser1?.status).toBe(GameStatus.ACTIVE);
     expect(gameUser2?.status).toBe(GameStatus.ACTIVE);
+  });
+
+  it('should get user statistic', async () => {
+    const userId = await createUserUseCase.execute(
+      new CreateUserCommand(user1),
+    );
+    const userId2 = await createUserUseCase.execute(
+      new CreateUserCommand(user2),
+    );
+
+    const questions: Question[] = [];
+    for (let i = 0; i < 5; i++) {
+      const dto = {
+        body: `question${i}`,
+        correctAnswers: [`answer`],
+      };
+      const question = await createQuestionUseCase.execute(
+        new CreateQuestionCommand(dto),
+      );
+      question.publish();
+      await dataSource.getRepository(Question).save(question);
+      questions.push(question);
+    }
+
+    await useCase.execute(new CreatePairConnectionCommand(userId));
+    const gameId: string = await useCase.execute(
+      new CreatePairConnectionCommand(userId2),
+    );
+    const game = await getGamePairQueryHandler.execute(
+      new GetGamePairQuery(userId2),
+    );
+
+    expect(game?.status).toBe(GameStatus.ACTIVE);
+
+    for (let i = 0; i < 5; i++) {
+      await answerUseCase.execute(
+        new AnswerCommand(userId, { answer: `answer` }),
+      );
+      await answerUseCase.execute(
+        new AnswerCommand(userId2, { answer: `answer` }),
+      );
+    }
+    const game2 = await getGameByIdQueryHandler.execute(
+      new GetGameByIdQuery(gameId, userId),
+    );
+    expect(game2?.status).toBe(GameStatus.FINISHED);
+    expect(game2?.firstPlayerProgress?.score).toBe(6);
+
+    const statistic = await getStatistic.execute(new GetStatisticQuery(userId));
+    expect(statistic.sumScore).toBe(6);
+    expect(statistic.avgScores).toBe(6);
+    expect(statistic.gamesCount).toBe(1);
+    expect(statistic.winsCount).toBe(1);
+    expect(statistic.lossesCount).toBe(0);
+    expect(statistic.drawsCount).toBe(0);
+
+    const questions2: Question[] = [];
+    for (let i = 0; i < 5; i++) {
+      const dto = {
+        body: `question${i}`,
+        correctAnswers: [`answer`],
+      };
+      const question2 = await createQuestionUseCase.execute(
+        new CreateQuestionCommand(dto),
+      );
+      question2.publish();
+      await dataSource.getRepository(Question).save(question2);
+      questions2.push(question2);
+    }
+
+    await useCase.execute(new CreatePairConnectionCommand(userId));
+    await useCase.execute(new CreatePairConnectionCommand(userId2));
+    await getGamePairQueryHandler.execute(new GetGamePairQuery(userId2));
+
+    for (let i = 0; i < 5; i++) {
+      await answerUseCase.execute(
+        new AnswerCommand(userId, { answer: `answer` }),
+      );
+      await answerUseCase.execute(
+        new AnswerCommand(userId2, { answer: `answer` }),
+      );
+    }
+    const game3 = await getGameByIdQueryHandler.execute(
+      new GetGameByIdQuery(gameId, userId),
+    );
+
+    expect(game3?.status).toBe(GameStatus.FINISHED);
+    expect(game3?.firstPlayerProgress?.score).toBe(6);
+
+    const statistic2 = await getStatistic.execute(
+      new GetStatisticQuery(userId2),
+    );
+    expect(statistic2.sumScore).toBe(10);
+    expect(statistic2.avgScores).toBe(5);
+    expect(statistic2.gamesCount).toBe(2);
+    expect(statistic2.winsCount).toBe(0);
+    expect(statistic2.lossesCount).toBe(2);
+    expect(statistic2.drawsCount).toBe(0);
   });
 });

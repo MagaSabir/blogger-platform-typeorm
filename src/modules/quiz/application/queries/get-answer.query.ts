@@ -10,7 +10,6 @@ export class GetAnswerQueryHandler implements IQueryHandler<GetAnswerQuery> {
   constructor(private repo: AnswerQueryRepository) {}
 
   async execute(query: GetAnswerQuery): Promise<AnswerViewModel | undefined> {
-    console.log(await this.repo.getAnswer(query.answerId));
     return this.repo.getAnswer(query.answerId);
   }
 }

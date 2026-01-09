@@ -27,13 +27,17 @@ import { AnswerQueryRepository } from './infrastructure/query-repository/answer.
 import { GetAnswerQueryHandler } from './application/queries/get-answer.query';
 import { GetGamePairQueryHandler } from './application/queries/get-game-pair.query';
 import { GetGameQueryByIdHandler } from './application/queries/get-game-by-id.query';
+import { PlayerQueryRepository } from './infrastructure/query-repository/player.query.repository';
+import { GetStatisticQueryHandler } from './application/queries/get-statistic.query';
+import { GameStatisticsController } from './api/game-statistics.controller';
+import { GetMyGamesQueryHandler } from './application/queries/get-my-games.query';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Question, Player, Game, GameQuestion, Answer]),
     CqrsModule,
   ],
-  controllers: [QuizAdminController, QuizController],
+  controllers: [QuizAdminController, QuizController, GameStatisticsController],
   providers: [
     QuestionRepository,
     QuestionQueryRepository,
@@ -50,9 +54,12 @@ import { GetGameQueryByIdHandler } from './application/queries/get-game-by-id.qu
     GameQuestionRepository,
     AnswerRepository,
     AnswerQueryRepository,
+    PlayerQueryRepository,
     GetAnswerQueryHandler,
     GetGamePairQueryHandler,
     GetGameQueryByIdHandler,
+    GetStatisticQueryHandler,
+    GetMyGamesQueryHandler,
     AnswerUseCase,
   ],
 })

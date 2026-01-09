@@ -6,6 +6,8 @@ import { EntityManager } from 'typeorm';
 import { GameQuestion } from '../../entitys/game-question.entity';
 import { Game, GameStatus } from '../../entitys/game.entity';
 import { Player } from '../../entitys/player.entity';
+import { DomainException } from '../../../../core/exceptions/domain.exceptions';
+import { DomainExceptionCodes } from '../../../../core/exceptions/domain-exception-codes';
 
 export class AnswerCommand {
   constructor(
@@ -16,12 +18,7 @@ export class AnswerCommand {
 
 @CommandHandler(AnswerCommand)
 export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
-  constructor(
-    // private gameRepo: GameRepository,
-    // private gameQuestionRepo: GameQuestionRepository,
-    // private answerRepo: AnswerRepository,
-    private entityManager: EntityManager,
-  ) {}
+  constructor(private entityManager: EntityManager) {}
 
   async execute(command: AnswerCommand) {
     return await this.entityManager.transaction(async (manager) => {
@@ -29,7 +26,6 @@ export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
       const playerRepo = manager.getRepository(Player);
       const answerRepo = manager.getRepository(Answer);
       const gameQuestionRepo = manager.getRepository(GameQuestion);
-      // const game = await this.gameRepo.findActiveGameByUserId(command.userId);
       const game = await gameRepo
         .createQueryBuilder('game')
         .innerJoinAndSelect('game.players', 'players') // ← INNER JOIN
@@ -46,18 +42,63 @@ export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
 
       if (!game) throw new ForbiddenException('No active game');
 
-      const player = game.getPlayerById(command.userId);
-      const otherPlayer = game.players.find((p) => p.userId !== command.userId);
+      const [player, otherPlayer] = await Promise.all([
+        playerRepo
+          .createQueryBuilder('p')
+          .setLock('pessimistic_write')
+          .where('p.userId = :userId', { userId: command.userId })
+          .andWhere('p.gameId = :gameId', { gameId: game.id })
+          .getOne(),
+        playerRepo
+          .createQueryBuilder('p')
+          .setLock('pessimistic_write')
+          .where('p.gameId = :gameId', { gameId: game.id })
+          .andWhere('p.userId != :userId', { userId: command.userId })
+          .getOne(),
+      ]);
 
+      // const player = await playerRepo
+      //   .createQueryBuilder('p')
+      //   .setLock('pessimistic_write')
+      //   .where('p.userId = :userId', { userId: command.userId })
+      //   .andWhere('p.gameId = :gameId', { gameId: game.id })
+      //   .getOne();
+      //
+      // if (!player) {
+      //   throw new DomainException({
+      //     code: DomainExceptionCodes.BadRequest,
+      //     message: 'player not found in game',
+      //   });
+      // }
+      // const otherPlayer = await playerRepo
+      //   .createQueryBuilder('p')
+      //   .setLock('pessimistic_write')
+      //   .where('p.gameId = :gameId', { gameId: game.id })
+      //   .andWhere('p.userId != :userId', { userId: command.userId })
+      //   .getOne();
+
+      if (!player || !otherPlayer) {
+        throw new DomainException({
+          code: DomainExceptionCodes.BadRequest,
+          message: 'player not found in game',
+        });
+      }
       const gameQuestion = await gameQuestionRepo.find({
         where: { gameId: game.id },
         relations: ['question'],
         order: { order: 'ASC' },
       });
 
-      const answersCount = await answerRepo.count({
-        where: { playerId: player.id },
-      });
+      // const answers = await answerRepo
+      //   .createQueryBuilder('a')
+      //   .setLock('pessimistic_write')
+      //   .where('a.playerId =:playerId', { playerId: player.id })
+      //   .getMany();
+      // const answersCount = answers.length;
+      const answersCount = await answerRepo
+        .createQueryBuilder('a')
+        .where('a.playerId = :playerId', { playerId: player.id })
+        .getCount();
 
       if (answersCount >= 5) {
         throw new ForbiddenException('already answered to all questions');
@@ -76,7 +117,6 @@ export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
 
       await answerRepo.save(answer);
 
-      //game.processAnswer(player, isCorrect, answersCount + 1);
       const currentAnswerNumber = answersCount + 1;
       if (isCorrect) {
         player.score += 1;
@@ -99,10 +139,8 @@ export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
         }
       }
 
-      await playerRepo.save(player);
-      if (otherPlayer) {
-        await playerRepo.save(otherPlayer);
-      }
+      await playerRepo.save([player, otherPlayer]);
+
       await gameRepo.save(game);
 
       return answer.id;

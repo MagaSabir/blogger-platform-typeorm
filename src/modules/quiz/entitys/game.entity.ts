@@ -43,36 +43,6 @@ export class Game {
     this.startGameDate = new Date();
   }
 
-  // addPlayer(userId: string) {
-  //   if (this.players.length >= 2) {
-  //     throw new DomainException({
-  //       code: DomainExceptionCodes.BadRequest,
-  //       message: 'Already thwo players',
-  //     });
-  //   }
-  //
-  //   const position = this.players.length == 0 ? 1 : 2;
-  //
-  //   const player = Player.create(userId, position, this.id);
-  //   this.players.push(player);
-  //
-  //   if (position === 2) {
-  //     this.start();
-  //   }
-  //   return player;
-  // }
-
-  getPlayerById(userId: string) {
-    const player = this.players.find((p) => p.userId === userId);
-    if (!player) {
-      throw new DomainException({
-        code: DomainExceptionCodes.BadRequest,
-        message: 'player not found in game',
-      });
-    }
-    return player;
-  }
-
   processAnswer(player: Player, isCorrect: boolean, answersCount: number) {
     if (isCorrect) {
       player.incrementScore();
