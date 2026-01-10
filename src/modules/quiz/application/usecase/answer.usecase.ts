@@ -57,26 +57,6 @@ export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
           .getOne(),
       ]);
 
-      // const player = await playerRepo
-      //   .createQueryBuilder('p')
-      //   .setLock('pessimistic_write')
-      //   .where('p.userId = :userId', { userId: command.userId })
-      //   .andWhere('p.gameId = :gameId', { gameId: game.id })
-      //   .getOne();
-      //
-      // if (!player) {
-      //   throw new DomainException({
-      //     code: DomainExceptionCodes.BadRequest,
-      //     message: 'player not found in game',
-      //   });
-      // }
-      // const otherPlayer = await playerRepo
-      //   .createQueryBuilder('p')
-      //   .setLock('pessimistic_write')
-      //   .where('p.gameId = :gameId', { gameId: game.id })
-      //   .andWhere('p.userId != :userId', { userId: command.userId })
-      //   .getOne();
-
       if (!player || !otherPlayer) {
         throw new DomainException({
           code: DomainExceptionCodes.BadRequest,
@@ -89,12 +69,6 @@ export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
         order: { order: 'ASC' },
       });
 
-      // const answers = await answerRepo
-      //   .createQueryBuilder('a')
-      //   .setLock('pessimistic_write')
-      //   .where('a.playerId =:playerId', { playerId: player.id })
-      //   .getMany();
-      // const answersCount = answers.length;
       const answersCount = await answerRepo
         .createQueryBuilder('a')
         .where('a.playerId = :playerId', { playerId: player.id })

@@ -29,7 +29,7 @@ import { GetGamePairQueryHandler } from './application/queries/get-game-pair.que
 import { GetGameQueryByIdHandler } from './application/queries/get-game-by-id.query';
 import { PlayerQueryRepository } from './infrastructure/query-repository/player.query.repository';
 import { GetStatisticQueryHandler } from './application/queries/get-statistic.query';
-import { GameStatisticsController } from './api/game-statistics.controller';
+import { GameUsersController } from './api/game-users.controller';
 import { GetMyGamesQueryHandler } from './application/queries/get-my-games.query';
 
 @Module({
@@ -37,7 +37,7 @@ import { GetMyGamesQueryHandler } from './application/queries/get-my-games.query
     TypeOrmModule.forFeature([Question, Player, Game, GameQuestion, Answer]),
     CqrsModule,
   ],
-  controllers: [QuizAdminController, QuizController, GameStatisticsController],
+  controllers: [QuizAdminController, QuizController, GameUsersController],
   providers: [
     QuestionRepository,
     QuestionQueryRepository,

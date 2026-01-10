@@ -12,6 +12,8 @@ import {
   SumScore,
   WinsCount,
 } from '../../api/view-models/statistic.view-model';
+import { TopGameQueryParams } from '../../api/admin/input-dto/top-game.query-params';
+import { SortParam } from '../../api/admin/input-dto/sort-custom.pipe';
 
 @Injectable()
 export class PlayerQueryRepository {
@@ -82,4 +84,10 @@ export class PlayerQueryRepository {
 
     return StatisticViewModel.mapToView(sum, avg, games, wins, loses, draws);
   }
+
+  async getTopUsers(
+    userId: string,
+    queryParams: TopGameQueryParams,
+    sort: SortParam[],
+  ) {}
 }

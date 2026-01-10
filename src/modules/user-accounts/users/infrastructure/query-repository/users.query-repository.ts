@@ -12,48 +12,6 @@ export class UsersQueryRepository {
     @InjectRepository(User) private userRepo: Repository<User>,
   ) {}
 
-  // async getUsers(
-  //   queryParams: UsersQueryParams,
-  // ): Promise<BasePaginatedResponse<UserViewModel>> {
-  //   const query = `
-  //       SELECT id, login, email, "createdAt"
-  //       FROM "Users"
-  //       WHERE  login ILIKE '%' || $1 || '%'
-  //          AND email ILIKE '%' || $2 || '%'
-  //       ORDER BY "${queryParams.sortBy}" ${queryParams.sortDirection}
-  //       LIMIT $3 OFFSET $4
-  //   `;
-  //
-  //   const count = `
-  //       SELECT COUNT(*) as "totalCount"
-  //       FROM "Users"
-  //       WHERE  login ILIKE '%' || $1 || '%'
-  //         AND email ILIKE '%' || $2 || '%'
-  //   `;
-  //
-  //   const [items, totalCountResult] = await Promise.all([
-  //     this.dataSource.query<UserViewModel[]>(query, [
-  //       queryParams.searchLoginTerm || '',
-  //       queryParams.searchEmailTerm || '',
-  //       queryParams.pageSize,
-  //       queryParams.calculateSkip(),
-  //     ]),
-  //     this.dataSource.query<{ totalCount: number }>(count, [
-  //       queryParams.searchLoginTerm || '',
-  //       queryParams.searchEmailTerm || '',
-  //     ]),
-  //   ]);
-  //   const totalCount: number = parseInt(totalCountResult[0].totalCount);
-  //
-  //   return {
-  //     pagesCount: Math.ceil(totalCount / queryParams.pageSize),
-  //     page: queryParams.pageNumber,
-  //     pageSize: queryParams.pageSize,
-  //     totalCount,
-  //     items,
-  //   };
-  // }
-
   async getUsers(
     query: UsersQueryParams,
   ): Promise<BasePaginatedResponse<UserViewModel>> {

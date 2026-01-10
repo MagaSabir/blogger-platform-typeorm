@@ -16,6 +16,7 @@ export type RawPlayerData = {
   score: number;
   userId: string;
   login: string;
+  gameId: string;
 };
 
 export type RawAnswerData = {
@@ -23,7 +24,19 @@ export type RawAnswerData = {
   answerStatus: AnswerStatus;
   addedAt: Date;
   playerId: string;
+  gameId: string;
 };
+
+export type RawQuestionData = {
+  id: string;
+  body: string;
+  gameId: string;
+};
+
+export class QuestionViewModel {
+  id: string;
+  body: string;
+}
 
 export class AnswerViewModel {
   questionId: string;
@@ -46,12 +59,7 @@ export class GameViewModel {
   id: string;
   firstPlayerProgress: PlayerProgressViewModel | null;
   secondPlayerProgress: PlayerProgressViewModel | null;
-  questions:
-    | {
-        id: string;
-        body: string;
-      }[]
-    | null;
+  questions: QuestionViewModel[] | null;
   status: GameStatus;
   pairCreatedDate: Date;
   startGameDate: Date | null;
