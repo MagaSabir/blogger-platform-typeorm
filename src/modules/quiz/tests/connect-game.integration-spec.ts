@@ -37,6 +37,11 @@ import {
   GetStatisticQueryHandler,
 } from '../application/queries/get-statistic.query';
 import { StatisticViewModel } from '../api/view-models/statistic.view-model';
+import {
+  GetMyGamesQuery,
+  GetMyGamesQueryHandler,
+} from '../application/queries/get-my-games.query';
+import { GameQueryParams } from '../api/admin/input-dto/game.query-params';
 
 const user1 = {
   login: 'test123',
@@ -60,6 +65,7 @@ describe('CREATE GAME', () => {
   let getGamePairQueryHandler: GetGamePairQueryHandler;
   let dataSource: DataSource;
   let getStatistic: GetStatisticQueryHandler;
+  let getMyGamesQueryHandler: GetMyGamesQueryHandler;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -78,6 +84,7 @@ describe('CREATE GAME', () => {
     getGamePairQueryHandler = app.get(GetGamePairQueryHandler);
     getStatistic = app.get(GetStatisticQueryHandler);
     getGameByIdQueryHandler = app.get(GetGameQueryByIdHandler);
+    getMyGamesQueryHandler = app.get(GetMyGamesQueryHandler);
   });
 
   afterEach(async () => {
@@ -284,5 +291,58 @@ describe('CREATE GAME', () => {
     expect(statistic2.winsCount).toBe(0);
     expect(statistic2.lossesCount).toBe(2);
     expect(statistic2.drawsCount).toBe(0);
+
+    const query = new GameQueryParams();
+
+    const allGames = await getMyGamesQueryHandler.execute(
+      new GetMyGamesQuery(userId, query),
+    );
+  });
+
+  it('should get my games', async () => {
+    const userId = await createUserUseCase.execute(
+      new CreateUserCommand(user1),
+    );
+    const userId2 = await createUserUseCase.execute(
+      new CreateUserCommand(user2),
+    );
+    const questions: Question[] = [];
+    for (let i = 0; i < 5; i++) {
+      const dto = {
+        body: `question${i}`,
+        correctAnswers: [`answer${i}`],
+      };
+      const question = await createQuestionUseCase.execute(
+        new CreateQuestionCommand(dto),
+      );
+      question.publish();
+      await dataSource.getRepository(Question).save(question);
+      questions.push(question);
+    }
+    for (let gameNumber = 0; gameNumber < 3; gameNumber++) {
+      console.log(`Создание игры ${gameNumber + 1}`);
+      await useCase.execute(new CreatePairConnectionCommand(userId));
+      await useCase.execute(new CreatePairConnectionCommand(userId2));
+      for (let questionIndex = 0; questionIndex < 5; questionIndex++) {
+        // Игрок 1 отвечает
+        await answerUseCase.execute(
+          new AnswerCommand(userId, { answer: `answer${questionIndex}` }),
+        );
+        await answerUseCase.execute(
+          new AnswerCommand(userId2, { answer: `answer${questionIndex}` }),
+        );
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      }
+      console.log(`Игра ${gameNumber + 1} завершена`);
+    }
+    await useCase.execute(new CreatePairConnectionCommand(userId));
+    await useCase.execute(new CreatePairConnectionCommand(userId2));
+    const query = new GameQueryParams();
+
+    const allGames = await getMyGamesQueryHandler.execute(
+      new GetMyGamesQuery(userId, query),
+    );
+
+    console.log(allGames);
   });
 });
