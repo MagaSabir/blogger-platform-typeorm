@@ -8,6 +8,8 @@ import { Game, GameStatus } from '../../entitys/game.entity';
 import { Player } from '../../entitys/player.entity';
 import { DomainException } from '../../../../core/exceptions/domain.exceptions';
 import { DomainExceptionCodes } from '../../../../core/exceptions/domain-exception-codes';
+import { Statistic } from '../../entitys/statistic.entity';
+import { PlayerStatsService } from '../service/player-stats.service';
 
 export class AnswerCommand {
   constructor(
@@ -18,7 +20,10 @@ export class AnswerCommand {
 
 @CommandHandler(AnswerCommand)
 export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
-  constructor(private entityManager: EntityManager) {}
+  constructor(
+    private entityManager: EntityManager,
+    private statsService: PlayerStatsService,
+  ) {}
 
   async execute(command: AnswerCommand) {
     return await this.entityManager.transaction(async (manager) => {
@@ -26,6 +31,7 @@ export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
       const playerRepo = manager.getRepository(Player);
       const answerRepo = manager.getRepository(Answer);
       const gameQuestionRepo = manager.getRepository(GameQuestion);
+      const statsRepo = manager.getRepository(Statistic);
       const game = await gameRepo
         .createQueryBuilder('game')
         .innerJoinAndSelect('game.players', 'players') // ← INNER JOIN
@@ -110,6 +116,7 @@ export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
           }
           game.status = GameStatus.FINISHED;
           game.finishGameDate = new Date();
+          await this.statsService.updateStats(player, otherPlayer, statsRepo);
         }
       }
 

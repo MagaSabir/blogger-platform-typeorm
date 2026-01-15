@@ -1,25 +1,28 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('Statistic')
 export class Statistic {
-  @PrimaryColumn('uuid')
+  @PrimaryGeneratedColumn('uuid')
+  public id: string;
+
+  @Column({ type: 'uuid', unique: true })
   public userId: string;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ default: 0 })
   public gamesCount: number;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ default: 0 })
   public wins: number;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ default: 0 })
   public loses: number;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ default: 0 })
   public draws: number;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ default: 0 })
   public sumScore: number;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ type: 'float', default: 0 })
   public avgScore: number;
 }

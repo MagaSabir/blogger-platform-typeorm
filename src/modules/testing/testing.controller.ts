@@ -14,7 +14,7 @@ export class TestingController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteAll() {
     await this.dataSource.query(`
-  TRUNCATE TABLE "Sessions", "Posts", "Blogs", "Users", "Question", "Answers", "Player", "Game", "GameQuestion" RESTART IDENTITY CASCADE
+  TRUNCATE TABLE "Sessions", "Posts", "Blogs", "Users", "Question", "Answers", "Player", "Game", "GameQuestion", "Statistic" RESTART IDENTITY CASCADE
 `);
   }
 }

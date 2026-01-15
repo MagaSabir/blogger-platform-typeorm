@@ -7,6 +7,7 @@ import { JwtOptionalAuthGuard } from '../../user-accounts/guards/bearer/jwt-opti
 import { TopGameQueryParams } from './admin/input-dto/top-game.query-params';
 import { SortCustomPipe, SortParam } from './admin/input-dto/sort-custom.pipe';
 import { StatisticViewModel } from './view-models/statistic.view-model';
+import { GetTopUsersQuery } from '../application/queries/get-top-users.query';
 
 @Controller('pair-game-quiz/users')
 export class GameUsersController {
@@ -28,6 +29,6 @@ export class GameUsersController {
     @Query('sort', SortCustomPipe)
     sort: SortParam[],
   ) {
-    return { sort: sort };
+    return this.queryBus.execute(new GetTopUsersQuery(userId, query, sort));
   }
 }

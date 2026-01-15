@@ -31,10 +31,20 @@ import { PlayerQueryRepository } from './infrastructure/query-repository/player.
 import { GetStatisticQueryHandler } from './application/queries/get-statistic.query';
 import { GameUsersController } from './api/game-users.controller';
 import { GetMyGamesQueryHandler } from './application/queries/get-my-games.query';
+import { Statistic } from './entitys/statistic.entity';
+import { PlayerStatsService } from './application/service/player-stats.service';
+import { GetTopUsersQueryHandler } from './application/queries/get-top-users.query';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Question, Player, Game, GameQuestion, Answer]),
+    TypeOrmModule.forFeature([
+      Question,
+      Player,
+      Game,
+      GameQuestion,
+      Answer,
+      Statistic,
+    ]),
     CqrsModule,
   ],
   controllers: [QuizAdminController, QuizController, GameUsersController],
@@ -60,7 +70,9 @@ import { GetMyGamesQueryHandler } from './application/queries/get-my-games.query
     GetGameQueryByIdHandler,
     GetStatisticQueryHandler,
     GetMyGamesQueryHandler,
+    GetTopUsersQueryHandler,
     AnswerUseCase,
+    PlayerStatsService,
   ],
 })
 export class QuizModule {}

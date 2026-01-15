@@ -17,6 +17,6 @@ export class GetTopUsersQueryHandler
 {
   constructor(private repo: PlayerQueryRepository) {}
   async execute(query: GetTopUsersQuery) {
-    return this.repo.
+    return this.repo.getTopUsers(query.userId, query.queryParams, query.sort);
   }
 }

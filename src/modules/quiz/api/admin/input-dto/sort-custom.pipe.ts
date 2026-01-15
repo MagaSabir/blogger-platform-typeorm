@@ -7,7 +7,7 @@ export type SortParam = {
 
 export class SortCustomPipe implements PipeTransform {
   transform(value: string | string[]): SortParam[] {
-    if (!value) value = ['avgScores desc', 'sumScore desc'];
+    if (!value) value = ['avgScore desc', 'sumScore desc'];
     console.log(value);
     const data = Array.isArray(value) ? value : [value];
 

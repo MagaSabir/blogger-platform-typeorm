@@ -42,6 +42,15 @@ import {
   GetMyGamesQueryHandler,
 } from '../application/queries/get-my-games.query';
 import { GameQueryParams } from '../api/admin/input-dto/game.query-params';
+import {
+  GetTopUsersQuery,
+  GetTopUsersQueryHandler,
+} from '../application/queries/get-top-users.query';
+import {
+  SortCustomPipe,
+  SortParam,
+} from '../api/admin/input-dto/sort-custom.pipe';
+import { TopGameQueryParams } from '../api/admin/input-dto/top-game.query-params';
 
 const user1 = {
   login: 'test123',
@@ -66,6 +75,7 @@ describe('CREATE GAME', () => {
   let dataSource: DataSource;
   let getStatistic: GetStatisticQueryHandler;
   let getMyGamesQueryHandler: GetMyGamesQueryHandler;
+  let getTopUsersQueryHandler: GetTopUsersQueryHandler;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -85,6 +95,7 @@ describe('CREATE GAME', () => {
     getStatistic = app.get(GetStatisticQueryHandler);
     getGameByIdQueryHandler = app.get(GetGameQueryByIdHandler);
     getMyGamesQueryHandler = app.get(GetMyGamesQueryHandler);
+    getTopUsersQueryHandler = app.get(GetTopUsersQueryHandler);
   });
 
   afterEach(async () => {
@@ -320,7 +331,6 @@ describe('CREATE GAME', () => {
       questions.push(question);
     }
     for (let gameNumber = 0; gameNumber < 3; gameNumber++) {
-      console.log(`Создание игры ${gameNumber + 1}`);
       await useCase.execute(new CreatePairConnectionCommand(userId));
       await useCase.execute(new CreatePairConnectionCommand(userId2));
       for (let questionIndex = 0; questionIndex < 5; questionIndex++) {
@@ -342,7 +352,16 @@ describe('CREATE GAME', () => {
     const allGames = await getMyGamesQueryHandler.execute(
       new GetMyGamesQuery(userId, query),
     );
+    const queryParams = new TopGameQueryParams();
+    queryParams.pageNumber = 1;
+    queryParams.pageSize = 15;
 
-    console.log(allGames);
+    const sort: SortParam[] = [{ field: 'avgScore', sorDirection: 'DESC' }];
+
+    const stats = await getTopUsersQueryHandler.execute(
+      new GetTopUsersQuery(userId, queryParams, sort),
+    );
+
+    console.log(stats);
   });
 });
