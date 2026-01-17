@@ -7,8 +7,6 @@ import {
 } from 'typeorm';
 import { Player } from './player.entity';
 import { GameQuestion } from './game-question.entity';
-import { DomainException } from '../../../core/exceptions/domain.exceptions';
-import { DomainExceptionCodes } from '../../../core/exceptions/domain-exception-codes';
 
 export enum GameStatus {
   PENDING = 'PendingSecondPlayer',
