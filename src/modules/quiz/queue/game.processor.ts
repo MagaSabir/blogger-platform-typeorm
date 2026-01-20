@@ -3,5 +3,7 @@ import { Job } from 'bullmq';
 
 @Processor('game')
 export class GameProcessor extends WorkerHost {
-  async process(job: Job) {}
+  async process(job: Job<{ gameId: string }>) {
+    const gameId: string = job.data.gameId;
+  }
 }
