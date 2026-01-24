@@ -34,6 +34,8 @@ import { GetMyGamesQueryHandler } from './application/queries/get-my-games.query
 import { Statistic } from './entitys/statistic.entity';
 import { PlayerStatsService } from './application/service/player-stats.service';
 import { GetTopUsersQueryHandler } from './application/queries/get-top-users.query';
+import { GameService } from './application/service/game.service';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
@@ -46,6 +48,9 @@ import { GetTopUsersQueryHandler } from './application/queries/get-top-users.que
       Statistic,
     ]),
     CqrsModule,
+    BullModule.registerQueue({
+      name: 'game',
+    }),
   ],
   controllers: [QuizAdminController, QuizController, GameUsersController],
   providers: [
@@ -73,6 +78,7 @@ import { GetTopUsersQueryHandler } from './application/queries/get-top-users.que
     GetTopUsersQueryHandler,
     AnswerUseCase,
     PlayerStatsService,
+    GameService,
   ],
 })
 export class QuizModule {}

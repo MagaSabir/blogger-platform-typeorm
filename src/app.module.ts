@@ -15,12 +15,25 @@ import { UsersModule } from './modules/user-accounts/users.module';
 import { BloggerPlatformModule } from './modules/blogger-platform/blogger-platform.module';
 import { throttlerSetup } from './setup/throtller.setup';
 import { QuizModule } from './modules/quiz/quiz.module';
+import { QueueModule } from './modules/quiz/queue/queue.module';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
     CoreModule,
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
+      imports: [
+        BullModule.forRoot({
+          connection: {
+            host: 'factual-roughy-33324.upstash.io',
+            port: 6379,
+            password:
+              'AYIsAAIncDE4M2RhM2UzNTdjMTI0Zjk4Yjg4MGNhMTg1MTFhMjgzOHAxMzMzMjQ',
+            tls: {},
+          },
+        }),
+        ConfigModule,
+      ],
       useFactory: (coreConfig: CoreConfig) => ({
         type: 'postgres',
         host: coreConfig.host,
@@ -40,6 +53,7 @@ import { QuizModule } from './modules/quiz/quiz.module';
     UsersModule,
     BloggerPlatformModule,
     QuizModule,
+    QueueModule,
   ],
   controllers: [AppController],
   providers: [

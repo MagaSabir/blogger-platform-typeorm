@@ -1,6 +1,6 @@
 import { AnswerInputDto } from '../../api/admin/input-dto/answer.input-dto';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { ForbiddenException } from '@nestjs/common';
+import { ForbiddenException, Logger } from '@nestjs/common';
 import { Answer } from '../../entitys/answer.entity';
 import { EntityManager } from 'typeorm';
 import { GameQuestion } from '../../entitys/game-question.entity';
@@ -10,6 +10,9 @@ import { DomainException } from '../../../../core/exceptions/domain.exceptions';
 import { DomainExceptionCodes } from '../../../../core/exceptions/domain-exception-codes';
 import { Statistic } from '../../entitys/statistic.entity';
 import { PlayerStatsService } from '../service/player-stats.service';
+import { InjectQueue } from '@nestjs/bullmq';
+import { GameService } from '../service/game.service';
+import { Queue } from 'bullmq';
 
 export class AnswerCommand {
   constructor(
@@ -23,10 +26,15 @@ export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
   constructor(
     private entityManager: EntityManager,
     private statsService: PlayerStatsService,
+    private gameService: GameService,
+    @InjectQueue('game') private gameTimeoutQueue: Queue,
   ) {}
+  private readonly logger = new Logger(GameService.name);
 
   async execute(command: AnswerCommand) {
-    return await this.entityManager.transaction(async (manager) => {
+    let gameIdForTimer: string | null = null;
+    let playerIdForTimer: string | null = null;
+    const answerId = await this.entityManager.transaction(async (manager) => {
       const gameRepo = manager.getRepository(Game);
       const playerRepo = manager.getRepository(Player);
       const answerRepo = manager.getRepository(Answer);
@@ -105,15 +113,27 @@ export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
       if (currentAnswerNumber === 5) {
         player.finish();
 
-        if (otherPlayer && otherPlayer.finishedAt && player.finishedAt) {
-          if (player.finishedAt < otherPlayer.finishedAt && player.score > 0) {
-            player.score += 1; // бонус
-          } else if (
-            otherPlayer.finishedAt < player.finishedAt &&
-            otherPlayer.score > 0
-          ) {
-            otherPlayer.score += 1;
-          }
+        if (!otherPlayer.finishedAt) {
+          gameIdForTimer = game.id;
+          playerIdForTimer = player.id;
+          this.logger.log(`📝 Запомнили игру ${game.id} для таймера`);
+        } else {
+          // Второй игрок уже завершил - завершаем игру сразу
+          this.logger.log(`🎮 Оба игрока завершили игру ${game.id} сразу`);
+          if (otherPlayer && otherPlayer.finishedAt && player.finishedAt)
+            if (
+              player.finishedAt < otherPlayer.finishedAt &&
+              player.score > 0
+            ) {
+              // Применяем бонусы и завершаем игру
+              player.score += 1;
+            } else if (
+              otherPlayer.finishedAt < player.finishedAt &&
+              otherPlayer.score > 0
+            ) {
+              otherPlayer.score += 1;
+            }
+
           game.status = GameStatus.FINISHED;
           game.finishGameDate = new Date();
           await this.statsService.updateStats(player, otherPlayer, statsRepo);
@@ -126,5 +146,17 @@ export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
 
       return answer.id;
     });
+    if (gameIdForTimer && playerIdForTimer) {
+      this.logger.log(`⏰ Запускаем таймер для игры ${gameIdForTimer}...`);
+      await this.gameService.onFirstPlayerFinished(
+        gameIdForTimer,
+        playerIdForTimer,
+      );
+      this.logger.log(
+        `✅ Таймер успешно установлен для игры ${gameIdForTimer}`,
+      );
+    }
+
+    return answerId;
   }
 }
