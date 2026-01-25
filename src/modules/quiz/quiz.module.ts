@@ -36,6 +36,7 @@ import { PlayerStatsService } from './application/service/player-stats.service';
 import { GetTopUsersQueryHandler } from './application/queries/get-top-users.query';
 import { GameService } from './application/service/game.service';
 import { BullModule } from '@nestjs/bullmq';
+import { GameProcessor } from './queue/game.processor';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { BullModule } from '@nestjs/bullmq';
   ],
   controllers: [QuizAdminController, QuizController, GameUsersController],
   providers: [
+    GameProcessor,
     QuestionRepository,
     QuestionQueryRepository,
     PlayerRepository,

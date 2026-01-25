@@ -27,13 +27,11 @@ export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
     private entityManager: EntityManager,
     private statsService: PlayerStatsService,
     private gameService: GameService,
-    @InjectQueue('game') private gameTimeoutQueue: Queue,
+    @InjectQueue('game') private gameQueue: Queue,
   ) {}
-  private readonly logger = new Logger(GameService.name);
 
   async execute(command: AnswerCommand) {
     let gameIdForTimer: string | null = null;
-    let playerIdForTimer: string | null = null;
     const answerId = await this.entityManager.transaction(async (manager) => {
       const gameRepo = manager.getRepository(Game);
       const playerRepo = manager.getRepository(Player);
@@ -113,30 +111,16 @@ export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
       if (currentAnswerNumber === 5) {
         player.finish();
 
-        if (!otherPlayer.finishedAt) {
-          gameIdForTimer = game.id;
-          playerIdForTimer = player.id;
-          this.logger.log(`📝 Запомнили игру ${game.id} для таймера`);
-        } else {
-          // Второй игрок уже завершил - завершаем игру сразу
-          this.logger.log(`🎮 Оба игрока завершили игру ${game.id} сразу`);
-          if (otherPlayer && otherPlayer.finishedAt && player.finishedAt)
-            if (
-              player.finishedAt < otherPlayer.finishedAt &&
-              player.score > 0
-            ) {
-              // Применяем бонусы и завершаем игру
-              player.score += 1;
-            } else if (
-              otherPlayer.finishedAt < player.finishedAt &&
-              otherPlayer.score > 0
-            ) {
-              otherPlayer.score += 1;
-            }
+        const isGameFinished = this.gameService.checkAndFinishGame(
+          game,
+          player,
+          otherPlayer,
+        );
 
-          game.status = GameStatus.FINISHED;
-          game.finishGameDate = new Date();
+        if (isGameFinished) {
           await this.statsService.updateStats(player, otherPlayer, statsRepo);
+        } else {
+          gameIdForTimer = game.id;
         }
       }
 
@@ -146,17 +130,14 @@ export class AnswerUseCase implements ICommandHandler<AnswerCommand> {
 
       return answer.id;
     });
-    if (gameIdForTimer && playerIdForTimer) {
-      this.logger.log(`⏰ Запускаем таймер для игры ${gameIdForTimer}...`);
-      await this.gameService.onFirstPlayerFinished(
-        gameIdForTimer,
-        playerIdForTimer,
-      );
-      this.logger.log(
-        `✅ Таймер успешно установлен для игры ${gameIdForTimer}`,
+
+    if (gameIdForTimer) {
+      await this.gameQueue.add(
+        'finish-game',
+        { gameId: gameIdForTimer },
+        { delay: 10000, jobId: gameIdForTimer },
       );
     }
-
     return answerId;
   }
 }
