@@ -1,6 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Question } from '../entitys/questions.entity';
 import { Repository } from 'typeorm';
 import { GameQuestion } from '../entitys/game-question.entity';
 
@@ -13,13 +12,5 @@ export class GameQuestionRepository {
 
   async save(question: GameQuestion[]) {
     await this.gameQuestionRepo.save(question);
-  }
-
-  async findQuestionByGameId(gameId: string) {
-    return this.gameQuestionRepo.find({
-      where: { gameId },
-      relations: ['question'],
-      order: { order: 'ASC' },
-    });
   }
 }

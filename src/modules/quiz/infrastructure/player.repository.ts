@@ -11,16 +11,4 @@ export class PlayerRepository {
   async save(player: Player) {
     await this.repo.save(player);
   }
-
-  async hasActiveGame(userId: string) {
-    const count = await this.repo.count({
-      where: {
-        userId,
-        game: {
-          status: In([GameStatus.ACTIVE, GameStatus.PENDING]),
-        },
-      },
-    });
-    return count > 0;
-  }
 }
