@@ -23,10 +23,10 @@ import { BullModule } from '@nestjs/bullmq';
     ConfigModule.forRoot(),
     BullModule.forRoot({
       connection: {
-        host: 'factual-roughy-33324.upstash.io',
-        port: 6379,
+        host: '',
+        port: 6,
         password:
-          'AYIsAAIncDE4M2RhM2UzNTdjMTI0Zjk4Yjg4MGNhMTg1MTFhMjgzOHAxMzMzMjQ',
+          '\',
         tls: {},
       },
     }),
